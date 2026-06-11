@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug localStorage</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #0f172a; color: #e2e8f0; }
+    h2 { color: #38bdf8; }
+    .item { margin: 4px 0; padding: 6px 10px; background: #1e293b; border-radius: 4px; word-break: break-all; }
+    .key { color: #86efac; font-weight: bold; }
+    .val { color: #fbbf24; }
+    .empty { color: #64748b; font-style: italic; }
+    .count { font-size: 20px; color: #a78bfa; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+<h2>🔍 Conteúdo do localStorage</h2>
+<div class="count" id="count"></div>
+<div id="items"></div>
+<script>
+  // Chaves críticas para diagnóstico
+  var CRITICAL = ['pipe_items','agenda_items','fin_contas','dev_planos','palavra_txt','fuso_ativo'];
+
+  var n = localStorage.length;
+  document.getElementById('count').textContent = n + ' chaves encontradas';
+
+  var html = '<h3 style="color:#f472b6;margin:16px 0 8px">🔑 Chaves críticas:</h3>';
+  CRITICAL.forEach(function(k) {
+    var v = localStorage.getItem(k);
+    if (v === null) {
+      html += '<div class="item"><span class="key">' + k + '</span>: <span style="color:#ef4444">AUSENTE</span></div>';
+    } else {
+      var preview = v.length > 150 ? v.substring(0,150) + '...' : v;
+      html += '<div class="item"><span class="key">' + k + '</span> (' + v.length + ' chars): <span class="val">' + preview + '</span></div>';
+    }
+  });
+
+  html += '<h3 style="color:#94a3b8;margin:16px 0 8px">📋 Todas as chaves (' + n + '):</h3>';
+  var keys = [];
+  for (var i = 0; i < n; i++) keys.push(localStorage.key(i));
+  keys.sort();
+  if (n === 0) {
+    html += '<div class="empty">localStorage está VAZIO</div>';
+  } else {
+    keys.forEach(function(k) {
+      var v = localStorage.getItem(k) || '';
+      var preview = v.length > 60 ? v.substring(0,60) + '...' : v;
+      html += '<div class="item"><span class="key">' + k + '</span>: <span class="val">' + preview + '</span></div>';
+    });
+  }
+  document.getElementById('items').innerHTML = html;
+</script>
+</body>
+</html>

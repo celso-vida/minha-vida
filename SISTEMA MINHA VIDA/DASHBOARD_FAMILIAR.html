@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Área Familiar — Celso</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-sync.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#DBDBDB;--primary:#1A4168;--area:#f97316;--white:#fff;--border:#c0c8d0;--radius:14px;--shadow:0 4px 18px rgba(0,0,0,.10);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--primary);min-height:100vh;padding:18px 14px 60px;}
+header{display:flex;align-items:center;gap:14px;max-width:1150px;margin:0 auto 18px;flex-wrap:wrap;}
+.back-btn{background:var(--area);color:#fff;border:none;border-radius:9px;padding:7px 14px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
+.back-btn:hover{opacity:.85;}
+.header-title{font-family:'Caveat',cursive;font-size:2rem;font-weight:700;color:var(--primary);}
+.header-sub{font-size:.78rem;color:var(--primary);opacity:.55;margin-top:2px;}
+
+/* ABAS */
+.tabs{display:flex;gap:6px;max-width:1150px;margin:0 auto 18px;flex-wrap:wrap;}
+.tab{background:var(--white);border:2px solid var(--border);border-radius:10px;padding:8px 16px;font-size:.79rem;font-weight:700;cursor:pointer;color:var(--primary);font-family:inherit;transition:all .15s;}
+.tab:hover{background:#fff3ec;border-color:var(--area);}
+.tab.active{background:var(--area);color:#fff;border-color:var(--area);}
+.tab-pane{display:none;max-width:1150px;margin:0 auto;}
+.tab-pane.active{display:block;}
+
+/* BLOCOS */
+.block{background:var(--white);border-radius:var(--radius);padding:18px 20px;margin-bottom:14px;border:1px solid var(--border);box-shadow:var(--shadow);}
+.block-title{font-size:.82rem;color:var(--primary);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--bg);display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+
+/* INPUTS */
+.inp{background:#f0f4f8;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:.78rem;font-family:inherit;color:var(--primary);}
+.inp:focus{outline:none;border-color:var(--area);}
+.sel{background:#f0f4f8;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:.76rem;font-family:inherit;color:var(--primary);cursor:pointer;}
+.btn{background:var(--primary);color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn:hover{opacity:.85;}
+.btn-o{background:var(--area);}
+.btn-g{background:#16a34a;}
+.btn-r{background:#ef4444;}
+.btn-w{background:#25d366;}
+.btn-sm{padding:3px 10px;font-size:.7rem;}
+
+/* FORM */
+.form-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;flex:1;min-width:110px;}
+.form-label{font-size:.7rem;font-weight:700;opacity:.55;text-transform:uppercase;letter-spacing:.06em;}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:700;white-space:nowrap;}
+.badge-g{background:#dcfce7;color:#15803d;}
+.badge-a{background:#fef9c3;color:#854d0e;}
+.badge-r{background:#fee2e2;color:#991b1b;}
+.badge-b{background:#dbeafe;color:#1e40af;}
+.badge-o{background:#ffedd5;color:#9a3412;}
+.badge-p{background:#f3e8ff;color:#6b21a8;}
+
+/* ITEM ROW */
+.item-row{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:9px;margin-bottom:6px;background:#f5f7fa;border:1px solid var(--border);font-size:.78rem;flex-wrap:wrap;}
+.item-row .nome{font-weight:700;}
+.item-row .det{opacity:.6;font-size:.72rem;}
+.del-btn{background:rgba(239,68,68,.12);border:none;border-radius:5px;padding:2px 8px;font-size:.7rem;color:#dc2626;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.del-btn:hover{background:rgba(239,68,68,.25);}
+
+/* PESSOA CARD */
+.grupo-section{margin-bottom:20px;}
+.grupo-header{display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:6px 10px;background:#f0f4f8;border-radius:9px;}
+.grupo-nome{font-size:.8rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;flex:1;}
+.grupo-count{font-size:.72rem;opacity:.5;}
+.pessoas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;}
+.pessoa-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 14px 10px;position:relative;transition:box-shadow .15s;}
+.pessoa-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.12);}
+.pessoa-avatar{width:44px;height:44px;border-radius:50%;background:var(--area);color:#fff;font-size:1.2rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pessoa-info{flex:1;min-width:0;}
+.pessoa-nome{font-weight:800;font-size:.88rem;margin-bottom:2px;}
+.pessoa-rel{font-size:.7rem;opacity:.55;margin-bottom:4px;}
+.pessoa-aniv{font-size:.72rem;color:var(--area);font-weight:600;}
+.pessoa-contato{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.contato-btn{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:6px;font-size:.68rem;font-weight:700;text-decoration:none;border:none;cursor:pointer;font-family:inherit;}
+.contato-btn.wpp{background:#dcfce7;color:#15803d;}
+.contato-btn.wpp:hover{background:#bbf7d0;}
+.contato-btn.tel{background:#dbeafe;color:#1e40af;}
+.contato-btn.email{background:#f3e8ff;color:#6b21a8;}
+.ultimo-contato{font-size:.68rem;margin-top:6px;padding:3px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;}
+.uc-ok{background:#dcfce7;color:#15803d;}
+.uc-aviso{background:#fef9c3;color:#854d0e;}
+.uc-alerta{background:#fee2e2;color:#991b1b;}
+.uc-sem{background:#f0f4f8;color:#888;}
+.pessoa-del{position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;font-size:.75rem;opacity:.3;}
+.pessoa-del:hover{opacity:.8;color:#dc2626;}
+
+/* ANIVERSÁRIOS */
+.aniv-card{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;margin-bottom:6px;border:1px solid var(--border);}
+.aniv-dias{font-size:1.4rem;font-weight:800;min-width:42px;text-align:center;}
+.aniv-info{flex:1;}
+.aniv-nome{font-weight:700;font-size:.88rem;}
+.aniv-data{font-size:.72rem;opacity:.6;}
+.aniv-idade{font-size:.72rem;font-weight:700;}
+
+/* PROGRESSO */
+.prog-bar-wrap{background:#e2e8f0;border-radius:20px;height:8px;overflow:hidden;flex:1;}
+.prog-bar{height:100%;border-radius:20px;background:var(--area);transition:width .4s;}
+.prog-bar.verde{background:#16a34a;}
+.prog-bar.vermelho{background:#ef4444;}
+
+/* TABELA */
+.tbl{width:100%;border-collapse:collapse;font-size:.78rem;}
+.tbl th{background:#f0f4f8;padding:7px 10px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;opacity:.6;font-weight:700;}
+.tbl td{padding:7px 10px;border-top:1px solid var(--bg);vertical-align:middle;}
+.tbl tr:hover td{background:#f8fafc;}
+
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:14px;}
+.kpi{background:#f0f4f8;border-radius:10px;padding:12px;text-align:center;border:1px solid var(--border);}
+.kpi-val{font-size:1.5rem;font-weight:800;line-height:1;}
+.kpi-lbl{font-size:.63rem;text-transform:uppercase;letter-spacing:.07em;opacity:.5;margin-top:4px;}
+.kpi-sub{font-size:.68rem;color:var(--area);font-weight:600;margin-top:2px;}
+
+/* ORAÇÃO */
+.oracao-card{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:9px;margin-bottom:7px;border:1px solid var(--border);}
+.oracao-card.respondido{background:#f0fdf4;border-color:#86efac;opacity:.7;}
+.oracao-check{width:18px;height:18px;accent-color:#16a34a;cursor:pointer;flex-shrink:0;margin-top:2px;}
+
+@media(max-width:600px){.pessoas-grid{grid-template-columns:1fr;}.kpi-row{grid-template-columns:repeat(2,1fr);}}
+
+/* ── FOTO DA ÁREA ─────────────────────────────────── */
+.area-foto-wrap{
+  flex-shrink:0; cursor:pointer; position:relative;
+  border-radius:14px; overflow:hidden;
+  border:2px solid var(--border);
+  box-shadow:0 4px 16px rgba(0,0,0,.13);
+  transition:transform .2s, box-shadow .2s;
+  width:210px; height:130px;
+  background:var(--area);
+}
+.area-foto-wrap:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.18);}
+.area-foto-wrap:hover .area-foto-overlay{opacity:1;}
+.area-foto-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;border-radius:12px;z-index:1;}
+.area-foto-placeholder{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  z-index:0;
+}
+.area-foto-placeholder-icon{font-size:2.2rem;opacity:.45;}
+.area-foto-placeholder-txt{font-size:.7rem;font-weight:700;color:#fff;opacity:.55;text-transform:uppercase;letter-spacing:.08em;}
+.area-foto-overlay{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,.48);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s;
+  border-radius:12px;
+  z-index:2;
+}
+.area-foto-overlay span{
+  color:#fff;font-size:.78rem;font-weight:700;
+  background:rgba(255,255,255,.18);
+  padding:6px 14px;border-radius:20px;
+  border:1px solid rgba(255,255,255,.3);
+}
+@media(max-width:600px){.area-foto-wrap{width:100%;height:100px;}}
+
+</style>
+
+<script>
+(function(){
+  var src=localStorage.getItem('foto_perfil');
+  if(!src)return;
+  var lnk=document.querySelector('link[rel~="icon"]');
+  if(!lnk){lnk=document.createElement('link');lnk.rel='icon';document.head.appendChild(lnk);}
+  lnk.href=src;
+})();
+</script>
+</head>
+<body>
+
+<header>
+  <a class="back-btn" href="DASHBOARD_GERAL.html">← Painel Geral</a>
+  <div>
+    <div class="header-title">Familiar — Celso</div>
+    <div class="header-sub" id="data-hoje"></div>
+  </div>
+  <div class="area-foto-wrap" onclick="document.getElementById('af-input').click()" title="Clique para adicionar ou trocar a foto">
+    <img id="af-img" class="area-foto-img" src="" alt="Foto da área">
+    <div id="af-ph" class="area-foto-placeholder">
+      <div class="area-foto-placeholder-icon">👨‍👩‍👧</div>
+      <div class="area-foto-placeholder-txt">Adicionar foto</div>
+    </div>
+    <div class="area-foto-overlay"><span>📷 Trocar foto</span></div>
+    <input type="file" id="af-input" accept="image/*" style="display:none" onchange="loadAreaFoto(this)">
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="abrirAba('pessoas',this)">👥 Pessoas</button>
+  <button class="tab" onclick="abrirAba('aniversarios',this)">🎂 Aniversários</button>
+  <button class="tab" onclick="abrirAba('compromissos',this)">📌 Compromissos</button>
+  <button class="tab" onclick="abrirAba('tarefas',this)">✅ Tarefas</button>
+  <button class="tab" onclick="abrirAba('metas',this)">🎯 Metas</button>
+  <button class="tab" onclick="abrirAba('historico',this)">📖 Histórico</button>
+  <button class="tab" onclick="abrirAba('oracao',this)">🙏 Oração</button>
+</div>
+
+<!-- ══ PESSOAS ══════════════════════════════════════════ -->
+<div class="tab-pane active" id="pane-pessoas">
+
+  <div class="kpi-row" id="kpi-pessoas"></div>
+
+  <!-- Gerenciar Grupos -->
+  <div class="block">
+    <div class="block-title">🗂️ Grupos de Pessoas
+      <button class="btn btn-sm btn-o" onclick="toggleGrupoForm()" style="margin-left:auto">+ Novo Grupo</button>
+    </div>
+    <div id="grupo-form" style="display:none;margin-bottom:12px;">
+      <div class="form-row">
+        <div class="form-group"><span class="form-label">Emoji</span><input class="inp" id="gf-emoji" type="text" placeholder="👨‍👩‍👧" style="max-width:60px"></div>
+        <div class="form-group"><span class="form-label">Nome do Grupo</span><input class="inp" id="gf-nome" type="text" placeholder="ex: Família Nuclear"></div>
+        <button class="btn btn-o" style="align-self:flex-end" onclick="addGrupo()">+ Adicionar</button>
+      </div>
+      <div id="grupos-lista" style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;"></div>
+    </div>
+  </div>
+
+  <!-- Cadastrar Pessoa -->
+  <div class="block">
+    <div class="block-title">➕ Cadastrar Pessoa</div>
+    <div class="form-row">
+      <div class="form-group"><span class="form-label">Nome</span><input class="inp" id="pf-nome" type="text" placeholder="Nome completo"></div>
+      <div class="form-group"><span class="form-label">Grupo</span><select class="sel" id="pf-grupo"></select></div>
+      <div class="form-group"><span class="form-label">Relação / Parentesco</span><input class="inp" id="pf-rel" type="text" placeholder="ex: Filho, Amigo..."></div>
+      <div class="form-group"><span class="form-label">Nascimento</span><input class="inp" id="pf-nasc" type="date"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><span class="form-label">WhatsApp</span><input class="inp" id="pf-wpp" type="text" placeholder="+55 11 99999-9999"></div>
+      <div class="form-group"><span class="form-label">Telefone</span><input class="inp" id="pf-tel" type="text" placeholder="Telefone"></div>
+      <div class="form-group"><span class="form-label">E-mail</span><input class="inp" id="pf-email" type="text" placeholder="e-mail"></div>
+      <div class="form-group"><span class="form-label">Obs.</span><input class="inp" id="pf-obs" type="text" placeholder="Observação"></div>
+      <button class="btn btn-o" style="align-self:flex-end" onclick="addPessoa()">+ Cadastrar</button>
+    </div>
+  </div>
+
+  <!-- Lista por grupos -->
+  <div id="pessoas-por-grupo"></div>
+
+</div>
+
+<!-- ══ ANIVERSÁRIOS ═════════════════════════════════════ -->
+<div class="tab-pane" id="pane-aniversarios">
+  <div class="block">
+    <div class="block-title">🎂 Próximos Aniversários (30 dias)</div>
+    <div id="aniv-proximos"></div>
+  </div>
+  <div class="block">
+    <div class="block-title">📅 Todos os Aniversários do Ano</div>
+    <div id="aniv-todos"></div>
+  </div>
+</div>
+
+<!-- ══ COMPROMISSOS ═════════════════════════════════════ -->
+<div class="tab-pane" id="pane-compromissos">
+  <div class="block">
+    <div class="block-title">📌 Compromissos com Pessoas</div>
+    <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead><tr><th>Data / Hora</th><th>Título</th><th>Pessoas</th><th>Local</th><th>Status</th><th>Obs.</th><th></th></tr></thead>
+        <tbody id="comp-body"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:14px;padding-top:12px;border-top:2px solid var(--bg);">
+      <div class="block-title" style="border-bottom:none;padding-bottom:0;margin-bottom:10px;">➕ Novo Compromisso</div>
+      <div class="form-row">
+        <div class="form-group"><span class="form-label">Título</span><input class="inp" id="co-titulo" type="text" placeholder="ex: Jantar de família"></div>
+        <div class="form-group"><span class="form-label">Data</span><input class="inp" id="co-data" type="date"></div>
+        <div class="form-group"><span class="form-label">Hora</span><input class="inp" id="co-hora" type="time" value="19:00"></div>
+        <div class="form-group"><span class="form-label">Local</span><input class="inp" id="co-local" type="text" placeholder="Local ou online"></div>
+        <div class="form-group"><span class="form-label">Status</span>
+          <select class="sel" id="co-status"><option value="pendente">Pendente</option><option value="confirmado">Confirmado</option><option value="realizado">Realizado</option><option value="cancelado">Cancelado</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="flex:2"><span class="form-label">Pessoas (selecione uma ou mais)</span>
+          <div id="co-pessoas-check" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px;background:#f0f4f8;border-radius:7px;border:1px solid var(--border);min-height:38px;"></div>
+        </div>
+        <div class="form-group" style="flex:2"><span class="form-label">Obs.</span><input class="inp" id="co-obs" type="text" placeholder="Observações"></div>
+        <button class="btn btn-o" style="align-self:flex-end" onclick="addCompromisso()">+ Adicionar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAREFAS ══════════════════════════════════════════ -->
+<div class="tab-pane" id="pane-tarefas">
+  <div class="block">
+    <div class="block-title">✅ Tarefas Relacionais</div>
+    <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead><tr><th>Tarefa</th><th>Pessoa</th><th>Responsável</th><th>Prazo</th><th>Status</th><th>Obs.</th><th></th></tr></thead>
+        <tbody id="tar-body"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:14px;padding-top:12px;border-top:2px solid var(--bg);">
+      <div class="form-row">
+        <div class="form-group" style="flex:2"><span class="form-label">Tarefa</span><input class="inp" id="ta-txt" type="text" placeholder="Descreva a tarefa..."></div>
+        <div class="form-group"><span class="form-label">Pessoa</span><select class="sel" id="ta-pessoa"></select></div>
+        <div class="form-group"><span class="form-label">Responsável</span>
+          <select class="sel" id="ta-resp"><option value="eu">Eu (Celso)</option><option value="outro">A outra pessoa</option><option value="ambos">Ambos</option></select>
+        </div>
+        <div class="form-group"><span class="form-label">Prazo</span><input class="inp" id="ta-prazo" type="date"></div>
+        <div class="form-group"><span class="form-label">Obs.</span><input class="inp" id="ta-obs" type="text" placeholder="Obs."></div>
+        <button class="btn btn-o" style="align-self:flex-end" onclick="addTarefa()">+ Adicionar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ METAS ════════════════════════════════════════════ -->
+<div class="tab-pane" id="pane-metas">
+  <div class="block">
+    <div class="block-title">🎯 Metas Relacionais</div>
+    <div id="metas-lista"></div>
+    <div style="margin-top:14px;padding-top:12px;border-top:2px solid var(--bg);">
+      <div class="form-row">
+        <div class="form-group"><span class="form-label">Pessoa</span><select class="sel" id="me-pessoa"><option value="">Geral (todas)</option></select></div>
+        <div class="form-group" style="flex:2"><span class="form-label">Meta</span><input class="inp" id="me-txt" type="text" placeholder="ex: Ligar para o Eduardo todo mês"></div>
+        <div class="form-group"><span class="form-label">Frequência</span>
+          <select class="sel" id="me-freq"><option>Diária</option><option>Semanal</option><option>Quinzenal</option><option>Mensal</option><option>Bimestral</option><option>Trimestral</option><option>Única</option></select>
+        </div>
+        <div class="form-group"><span class="form-label">Último cumprimento</span><input class="inp" id="me-ult" type="date"></div>
+        <button class="btn btn-o" style="align-self:flex-end" onclick="addMeta()">+ Adicionar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HISTÓRICO ════════════════════════════════════════ -->
+<div class="tab-pane" id="pane-historico">
+  <div class="block">
+    <div class="block-title">📖 Histórico de Encontros e Momentos</div>
+    <div id="hist-lista"></div>
+    <div style="margin-top:14px;padding-top:12px;border-top:2px solid var(--bg);">
+      <div class="form-row">
+        <div class="form-group"><span class="form-label">Data</span><input class="inp" id="hi-data" type="date"></div>
+        <div class="form-group" style="flex:2"><span class="form-label">Descrição</span><input class="inp" id="hi-txt" type="text" placeholder="ex: Almoço com Rafael em Legnano"></div>
+        <div class="form-group"><span class="form-label">Pessoas</span><select class="sel" id="hi-pessoa"><option value="">Geral</option></select></div>
+        <div class="form-group"><span class="form-label">Categoria</span>
+          <select class="sel" id="hi-cat"><option>Encontro</option><option>Ligação</option><option>Viagem</option><option>Celebração</option><option>Apoio</option><option>Outro</option></select>
+        </div>
+        <div class="form-group"><span class="form-label">Obs.</span><input class="inp" id="hi-obs" type="text" placeholder="Detalhes..."></div>
+        <button class="btn btn-o" style="align-self:flex-end" onclick="addHistorico()">+ Registrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ORAÇÃO ════════════════════════════════════════════ -->
+<div class="tab-pane" id="pane-oracao">
+  <div class="kpi-row" id="kpi-oracao"></div>
+  <div class="block">
+    <div class="block-title">🙏 Pedidos de Oração por Familiares e Amigos</div>
+    <div id="oracao-lista"></div>
+    <div style="margin-top:14px;padding-top:12px;border-top:2px solid var(--bg);">
+      <div class="form-row">
+        <div class="form-group"><span class="form-label">Pessoa</span><select class="sel" id="or-pessoa"><option value="">Geral / Família</option></select></div>
+        <div class="form-group" style="flex:2"><span class="form-label">Pedido de Oração</span><input class="inp" id="or-txt" type="text" placeholder="Descreva o pedido..."></div>
+        <div class="form-group"><span class="form-label">Data</span><input class="inp" id="or-data" type="date"></div>
+        <div class="form-group"><span class="form-label">Urgência</span>
+          <select class="sel" id="or-urgencia"><option value="normal">Normal</option><option value="urgente">Urgente</option><option value="louvor">Louvor / Gratidão</option></select>
+        </div>
+        <button class="btn btn-o" style="align-self:flex-end" onclick="addOracao()">+ Adicionar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SCRIPTS ═══════════════════════════ -->
+<script>
+'use strict';
+
+const hoje = new Date();
+const dtStr = d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const hojeStr = dtStr(hoje);
+const fmtData = s=>{if(!s)return '';const[y,m,d]=s.split('-');return`${d}/${m}/${y}`;};
+const ls  = (k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch{return def;}};
+const lss = (k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const empty = msg=>`<div style="font-size:.78rem;color:#aaa;font-style:italic;padding:8px 0">${msg}</div>`;
+const initials = nome=>(nome||'?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+
+document.getElementById('data-hoje').textContent=
+  hoje.toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+// ── ABAS ─────────────────────────────────────────────
+function abrirAba(id,btn){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='pessoas') renderPessoas();
+  if(id==='aniversarios') renderAniversarios();
+  if(id==='compromissos'){renderCompromissos();renderPessoasCheck();}
+  if(id==='tarefas'){renderTarefas();popularSelectPessoas(['ta-pessoa']);}
+  if(id==='metas'){renderMetas();popularSelectPessoas(['me-pessoa']);}
+  if(id==='historico'){renderHistorico();popularSelectPessoas(['hi-pessoa']);}
+  if(id==='oracao'){renderOracao();popularSelectPessoas(['or-pessoa']);}
+}
+
+// ── GRUPOS ────────────────────────────────────────────
+const GRUPOS_DEFAULT=[
+  {id:'nuclear',emoji:'👨‍👩‍👧',nome:'Família Nuclear'},
+  {id:'estendida',emoji:'🏠',nome:'Família Estendida'},
+  {id:'amigos',emoji:'🤝',nome:'Amigos'},
+  {id:'outros',emoji:'👤',nome:'Outros'},
+];
+let grupos=ls('fam_grupos',GRUPOS_DEFAULT);
+function saveGrupos(){lss('fam_grupos',grupos);}
+
+function toggleGrupoForm(){
+  const f=document.getElementById('grupo-form');
+  f.style.display=f.style.display==='none'?'block':'none';
+  renderGruposLista();
+}
+function renderGruposLista(){
+  document.getElementById('grupos-lista').innerHTML=grupos.map((g,i)=>`
+    <span style="background:#f0f4f8;border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:.75rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;">
+      ${g.emoji} ${g.nome}
+      <button onclick="delGrupo(${i})" style="background:none;border:none;cursor:pointer;font-size:.75rem;color:#dc2626;padding:0">✕</button>
+    </span>`).join('');
+}
+function addGrupo(){
+  const nome=document.getElementById('gf-nome').value.trim();
+  if(!nome) return;
+  const id='g_'+Date.now();
+  grupos.push({id,emoji:document.getElementById('gf-emoji').value||'👤',nome});
+  saveGrupos();renderGruposLista();popularSelectGrupos();
+  document.getElementById('gf-nome').value='';document.getElementById('gf-emoji').value='';
+}
+function delGrupo(i){
+  if(!confirm('Remover grupo? Pessoas deste grupo serão movidas para "Outros".')) return;
+  const gid=grupos[i].id;
+  let pessoas=ls('fam_pessoas',[]);
+  pessoas=pessoas.map(p=>p.grupo===gid?{...p,grupo:'outros'}:p);
+  lss('fam_pessoas',pessoas);
+  grupos.splice(i,1);saveGrupos();renderGruposLista();popularSelectGrupos();renderPessoas();
+}
+function popularSelectGrupos(){
+  const sel=document.getElementById('pf-grupo');
+  sel.innerHTML=grupos.map(g=>`<option value="${g.id}">${g.emoji} ${g.nome}</option>`).join('');
+}
+
+// ── PESSOAS ───────────────────────────────────────────
+const PESSOAS_DEFAULT=[
+  {id:'p1',nome:'Selma',grupo:'nuclear',rel:'Esposa',nasc:'',wpp:'+55',tel:'',email:'',obs:''},
+  {id:'p2',nome:'Rafael',grupo:'nuclear',rel:'Filho',nasc:'1990-05-30',wpp:'',tel:'',email:'',obs:''},
+  {id:'p3',nome:'Andrea',grupo:'nuclear',rel:'Nora (esposa do Rafael)',nasc:'',wpp:'',tel:'',email:'',obs:''},
+  {id:'p4',nome:'Rodrigo',grupo:'nuclear',rel:'Filho (gêmeo)',nasc:'1994-05-18',wpp:'',tel:'',email:'',obs:''},
+  {id:'p5',nome:'Monica',grupo:'nuclear',rel:'Nora (esposa do Rodrigo)',nasc:'',wpp:'',tel:'',email:'',obs:''},
+  {id:'p6',nome:'Adriana',grupo:'nuclear',rel:'Filha (gêmea)',nasc:'1994-05-18',wpp:'',tel:'',email:'',obs:''},
+  {id:'p7',nome:'Gabriel',grupo:'nuclear',rel:'Genro (marido da Adriana)',nasc:'',wpp:'',tel:'',email:'',obs:''},
+  {id:'p8',nome:'Matheus',grupo:'nuclear',rel:'Neto',nasc:'2016-04-21',wpp:'',tel:'',email:'',obs:''},
+  {id:'p9',nome:'Laura',grupo:'nuclear',rel:'Neta',nasc:'2019-07-22',wpp:'',tel:'',email:'',obs:''},
+  {id:'p10',nome:'Giulia',grupo:'nuclear',rel:'Neta',nasc:'2021-12-18',wpp:'',tel:'',email:'',obs:''},
+  {id:'p11',nome:'Maitê',grupo:'nuclear',rel:'Neta',nasc:'2024-08-05',wpp:'',tel:'',email:'',obs:''},
+  {id:'p12',nome:'Arthur',grupo:'nuclear',rel:'Neto',nasc:'2025-08-03',wpp:'',tel:'',email:'',obs:''},
+  {id:'p13',nome:'Neuza',grupo:'estendida',rel:'Mãe de Celso',nasc:'',wpp:'',tel:'',email:'',obs:''},
+  {id:'p14',nome:'Eduardo',grupo:'estendida',rel:'Irmão de Celso',nasc:'',wpp:'',tel:'',email:'',obs:''},
+  {id:'p15',nome:'Ciça',grupo:'estendida',rel:'Irmã de Celso',nasc:'',wpp:'',tel:'',email:'',obs:''},
+  {id:'p16',nome:'Neyde',grupo:'estendida',rel:'Mãe da Selma (sogra)',nasc:'',wpp:'',tel:'',email:'',obs:''},
+];
+let pessoas=ls('fam_pessoas', PESSOAS_DEFAULT);
+function savePessoas(){lss('fam_pessoas',pessoas);}
+
+function diasParaAniv(nascStr){
+  if(!nascStr) return null;
+  const [y,m,d]=nascStr.split('-').map(Number);
+  const ano=hoje.getFullYear();
+  let prox=new Date(ano,m-1,d);
+  if(prox<hoje) prox=new Date(ano+1,m-1,d);
+  return Math.round((prox-hoje)/86400000);
+}
+function calcIdade(nascStr){
+  if(!nascStr) return null;
+  const [y]=nascStr.split('-').map(Number);
+  return hoje.getFullYear()-y;
+}
+function diasSemContato(ucStr){
+  if(!ucStr) return null;
+  const d=new Date(ucStr+'T12:00:00');
+  return Math.round((hoje-d)/86400000);
+}
+function ucClass(dias){
+  if(dias===null) return 'uc-sem';
+  if(dias<=14) return 'uc-ok';
+  if(dias<=30) return 'uc-aviso';
+  return 'uc-alerta';
+}
+function ucTxt(dias){
+  if(dias===null) return '— sem registro de contato';
+  if(dias===0) return '✓ Hoje';
+  if(dias===1) return '✓ Ontem';
+  return `⏱ Há ${dias} dias`;
+}
+
+function renderPessoas(){
+  renderKPIsPessoas();
+  const wrap=document.getElementById('pessoas-por-grupo');
+  wrap.innerHTML='';
+  grupos.forEach(g=>{
+    const gp=pessoas.filter(p=>p.grupo===g.id);
+    if(!gp.length) return;
+    const sec=document.createElement('div');
+    sec.className='grupo-section';
+    sec.innerHTML=`<div class="grupo-header"><span style="font-size:1.3rem">${g.emoji}</span><span class="grupo-nome">${g.nome}</span><span class="grupo-count">${gp.length} pessoa${gp.length>1?'s':''}</span></div>
+    <div class="pessoas-grid">${gp.map(renderPessoaCard).join('')}</div>`;
+    wrap.appendChild(sec);
+  });
+}
+function renderPessoaCard(p){
+  const dias=diasParaAniv(p.nasc);
+  const uc=ls('uc_'+p.id,null);
+  const dsc=diasSemContato(uc);
+  const anivHoje=p.nasc&&(()=>{const[,m,d]=p.nasc.split('-').map(Number);return m-1===hoje.getMonth()&&d===hoje.getDate();})();
+  const wppNum=(p.wpp||'').replace(/\D/g,'');
+  return `<div class="pessoa-card">
+    <button class="pessoa-del" onclick="delPessoa('${p.id}')">✕</button>
+    <div style="display:flex;gap:10px;align-items:flex-start;">
+      <div class="pessoa-avatar" style="background:${grupoCor(p.grupo)}">${initials(p.nome)}</div>
+      <div class="pessoa-info">
+        <div class="pessoa-nome">${p.nome} ${anivHoje?'🎂':''}</div>
+        <div class="pessoa-rel">${p.rel||'—'}</div>
+        ${p.nasc?`<div class="pessoa-aniv">🎂 ${fmtData(p.nasc)}${calcIdade(p.nasc)?' — '+calcIdade(p.nasc)+' anos':''}${dias!==null?' · em '+dias+' dias':''}</div>`:''}
+      </div>
+    </div>
+    <div class="pessoa-contato">
+      ${wppNum?`<a class="contato-btn wpp" href="https://wa.me/${wppNum}" >💬 WhatsApp</a>`:''}
+      ${p.tel?`<a class="contato-btn tel" href="tel:${p.tel}">📞 Ligar</a>`:''}
+      ${p.email?`<a class="contato-btn email" href="mailto:${p.email}">✉️ E-mail</a>`:''}
+    </div>
+    <div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span class="ultimo-contato ${ucClass(dsc)}">${ucTxt(dsc)}</span>
+      <button onclick="registrarContato('${p.id}')" style="background:#f0f4f8;border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:.68rem;cursor:pointer;font-family:inherit;">✓ Contato hoje</button>
+    </div>
+    ${p.obs?`<div style="font-size:.7rem;opacity:.5;margin-top:5px">${p.obs}</div>`:''}
+  </div>`;
+}
+function grupoCor(gid){
+  const cores={nuclear:'#f97316',estendida:'#3b9eff',amigos:'#16a34a',outros:'#64748b'};
+  return cores[gid]||'#9333ea';
+}
+function registrarContato(pid){
+  lss('uc_'+pid,hojeStr);renderPessoas();
+}
+function addPessoa(){
+  const nome=document.getElementById('pf-nome').value.trim();if(!nome) return;
+  const p={id:'p_'+Date.now(),nome,grupo:document.getElementById('pf-grupo').value,rel:document.getElementById('pf-rel').value,
+    nasc:document.getElementById('pf-nasc').value,wpp:document.getElementById('pf-wpp').value,
+    tel:document.getElementById('pf-tel').value,email:document.getElementById('pf-email').value,obs:document.getElementById('pf-obs').value};
+  pessoas.push(p);savePessoas();renderPessoas();
+  ['pf-nome','pf-rel','pf-nasc','pf-wpp','pf-tel','pf-email','pf-obs'].forEach(id=>document.getElementById(id).value='');
+  popularSelectPessoas(['ta-pessoa','me-pessoa','hi-pessoa','or-pessoa']);
+}
+function delPessoa(id){
+  if(!confirm('Remover esta pessoa?')) return;
+  pessoas=pessoas.filter(p=>p.id!==id);savePessoas();renderPessoas();
+  popularSelectPessoas(['ta-pessoa','me-pessoa','hi-pessoa','or-pessoa']);
+}
+
+function popularSelectPessoas(ids){
+  const opts='<option value="">— Selecione —</option>'+pessoas.map(p=>`<option value="${p.id}">${p.nome}</option>`).join('');
+  ids.forEach(id=>{const el=document.getElementById(id);if(el) el.innerHTML=opts;});
+}
+function renderPessoasCheck(){
+  const wrap=document.getElementById('co-pessoas-check');
+  wrap.innerHTML=pessoas.map(p=>`
+    <label style="display:inline-flex;align-items:center;gap:5px;font-size:.74rem;cursor:pointer;background:#fff;border:1px solid var(--border);border-radius:6px;padding:3px 9px;">
+      <input type="checkbox" value="${p.id}" style="accent-color:var(--area)"> ${p.nome}
+    </label>`).join('');
+}
+
+function renderKPIsPessoas(){
+  const total=pessoas.length;
+  const semContato=pessoas.filter(p=>{const uc=ls('uc_'+p.id,null);const d=diasSemContato(uc);return d===null||d>30;}).length;
+  const anivMes=pessoas.filter(p=>{if(!p.nasc)return false;const[,m]=p.nasc.split('-').map(Number);return m-1===hoje.getMonth();}).length;
+  const comps=ls('fam_compromissos',[]).filter(c=>c.status==='pendente'||c.status==='confirmado').length;
+  document.getElementById('kpi-pessoas').innerHTML=`
+    <div class="kpi"><div class="kpi-val">${total}</div><div class="kpi-lbl">Pessoas</div><div class="kpi-sub">cadastradas</div></div>
+    <div class="kpi ${semContato>0?'':''}"><div class="kpi-val" style="color:${semContato>5?'#dc2626':semContato>2?'#ca8a04':'#16a34a'}">${semContato}</div><div class="kpi-lbl">Sem contato</div><div class="kpi-sub">há mais de 30 dias</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:#f97316">${anivMes}</div><div class="kpi-lbl">Aniversários</div><div class="kpi-sub">este mês</div></div>
+    <div class="kpi"><div class="kpi-val">${comps}</div><div class="kpi-lbl">Compromissos</div><div class="kpi-sub">abertos</div></div>`;
+}
+
+// ── ANIVERSÁRIOS ─────────────────────────────────────
+function renderAniversarios(){
+  const proxEl=document.getElementById('aniv-proximos');
+  const todosEl=document.getElementById('aniv-todos');
+  const comNasc=pessoas.filter(p=>p.nasc).map(p=>({...p,dias:diasParaAniv(p.nasc),idade:calcIdade(p.nasc)}));
+  const prox=comNasc.filter(p=>p.dias<=30).sort((a,b)=>a.dias-b.dias);
+  if(!prox.length){proxEl.innerHTML=empty('Nenhum aniversário nos próximos 30 dias.');}
+  else{
+    proxEl.innerHTML=prox.map(p=>{
+      const cor=p.dias===0?'#f97316':p.dias<=7?'#ca8a04':'#1A4168';
+      const bgCor=p.dias===0?'#fff3ec':p.dias<=7?'#fef9c3':'#f0f4f8';
+      return `<div class="aniv-card" style="background:${bgCor};border-color:${cor}20">
+        <div class="aniv-dias" style="color:${cor}">${p.dias===0?'🎂':p.dias+'d'}</div>
+        <div class="aniv-info">
+          <div class="aniv-nome">${p.nome} ${p.dias===0?'— HOJE! 🎉':''}</div>
+          <div class="aniv-data">${fmtData(p.nasc)} · ${p.rel}</div>
+        </div>
+        <div class="aniv-idade" style="color:${cor}">${p.idade} anos</div>
+        ${(p.wpp||'').replace(/\D/g,'')?`<a class="contato-btn wpp" href="https://wa.me/${(p.wpp||'').replace(/\D/g,'')}?text=${encodeURIComponent('🎂 Feliz Aniversário, '+p.nome+'! 🎉')}" >💬 Parabéns!</a>`:''}
+      </div>`;
+    }).join('');
+  }
+  const porMes=Array.from({length:12},(_,i)=>({mes:i,pessoas:comNasc.filter(p=>{const[,m]=p.nasc.split('-').map(Number);return m-1===i;}).sort((a,b)=>parseInt(a.nasc.split('-')[2])-parseInt(b.nasc.split('-')[2]))})).filter(m=>m.pessoas.length);
+  const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  todosEl.innerHTML=porMes.map(m=>`
+    <div style="margin-bottom:14px;">
+      <div style="font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.5;margin-bottom:6px;${m.mes===hoje.getMonth()?'color:var(--area);opacity:1':''}">${meses[m.mes]}${m.mes===hoje.getMonth()?' ← este mês':''}</div>
+      ${m.pessoas.map(p=>`<div class="item-row">
+        <span style="font-size:1.1rem">🎂</span>
+        <span style="font-weight:700;flex:1">${p.nome}</span>
+        <span class="det">${p.rel}</span>
+        <span class="badge badge-o">dia ${parseInt(p.nasc.split('-')[2])}</span>
+        <span class="badge badge-b">${p.idade} anos</span>
+      </div>`).join('')}
+    </div>`).join('');
+  if(!comNasc.length) todosEl.innerHTML=empty('Nenhum aniversário cadastrado. Adicione datas de nascimento no cadastro de Pessoas.');
+}
+
+// ── COMPROMISSOS ─────────────────────────────────────
+document.getElementById('co-data').value=hojeStr;
+let compromissos=ls('fam_compromissos',[]);
+function renderCompromissos(){
+  const tbody=document.getElementById('comp-body');
+  const sorted=[...compromissos].sort((a,b)=>a.data.localeCompare(b.data));
+  if(!sorted.length){tbody.innerHTML=`<tr><td colspan="7" style="color:#aaa;font-style:italic;font-size:.76rem;padding:12px">Nenhum compromisso registrado.</td></tr>`;return;}
+  const sb={pendente:'badge-a',confirmado:'badge-g',realizado:'badge-b',cancelado:'badge-r'};
+  tbody.innerHTML=sorted.map(c=>{
+    const ps=c.pessoas?c.pessoas.map(pid=>{const p=pessoas.find(x=>x.id===pid);return p?p.nome:'?';}).join(', '):'—';
+    return `<tr>
+      <td><strong>${fmtData(c.data)}</strong>${c.hora?' '+c.hora:''}</td>
+      <td><strong>${c.titulo}</strong></td>
+      <td>${ps}</td>
+      <td>${c.local||'—'}</td>
+      <td><span class="badge ${sb[c.status]||'badge-b'}">${c.status}</span></td>
+      <td>${c.obs||'—'}</td>
+      <td style="white-space:nowrap">
+        <select onchange="mudarStatusComp(${compromissos.indexOf(c)},this.value)" class="sel" style="padding:2px 6px;font-size:.68rem;">
+          <option value="pendente" ${c.status==='pendente'?'selected':''}>Pendente</option>
+          <option value="confirmado" ${c.status==='confirmado'?'selected':''}>Confirmado</option>
+          <option value="realizado" ${c.status==='realizado'?'selected':''}>Realizado</option>
+          <option value="cancelado" ${c.status==='cancelado'?'selected':''}>Cancelado</option>
+        </select>
+        <button class="del-btn" onclick="delCompromisso(${compromissos.indexOf(c)})">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+function addCompromisso(){
+  const titulo=document.getElementById('co-titulo').value.trim();
+  const data=document.getElementById('co-data').value;
+  if(!titulo||!data) return;
+  const checks=[...document.querySelectorAll('#co-pessoas-check input:checked')].map(c=>c.value);
+  compromissos.push({titulo,data,hora:document.getElementById('co-hora').value,local:document.getElementById('co-local').value,status:document.getElementById('co-status').value,pessoas:checks,obs:document.getElementById('co-obs').value});
+  lss('fam_compromissos',compromissos);renderCompromissos();
+  ['co-titulo','co-local','co-obs'].forEach(id=>document.getElementById(id).value='');
+  document.querySelectorAll('#co-pessoas-check input').forEach(c=>c.checked=false);
+}
+function mudarStatusComp(i,v){compromissos[i].status=v;lss('fam_compromissos',compromissos);renderCompromissos();}
+function delCompromisso(i){compromissos.splice(i,1);lss('fam_compromissos',compromissos);renderCompromissos();}
+
+// ── TAREFAS ───────────────────────────────────────────
+let tarefas=ls('fam_tarefas',[]);
+function renderTarefas(){
+  const tbody=document.getElementById('tar-body');
+  const sorted=[...tarefas].sort((a,b)=>(a.prazo||'9').localeCompare(b.prazo||'9'));
+  if(!sorted.length){tbody.innerHTML=`<tr><td colspan="7" style="color:#aaa;font-style:italic;font-size:.76rem;padding:12px">Nenhuma tarefa registrada.</td></tr>`;return;}
+  const rb={eu:'badge-b',outro:'badge-o',ambos:'badge-p'};
+  const rt={eu:'Eu (Celso)',outro:'A outra pessoa',ambos:'Ambos'};
+  const sb={pendente:'badge-a',feito:'badge-g',cancelada:'badge-r'};
+  tbody.innerHTML=sorted.map(t=>{
+    const p=pessoas.find(x=>x.id===t.pessoa);
+    const atrasada=t.prazo&&t.prazo<hojeStr&&t.status!=='feito';
+    return `<tr style="${atrasada?'background:#fff5f5':''}">
+      <td><strong>${t.txt}</strong>${atrasada?' <span class="badge badge-r">Atrasada</span>':''}</td>
+      <td>${p?p.nome:'—'}</td>
+      <td><span class="badge ${rb[t.resp]}">${rt[t.resp]}</span></td>
+      <td>${fmtData(t.prazo)||'—'}</td>
+      <td>
+        <select onchange="mudarStatusTar(${tarefas.indexOf(t)},this.value)" class="sel" style="padding:2px 6px;font-size:.68rem;">
+          <option value="pendente" ${t.status==='pendente'?'selected':''}>Pendente</option>
+          <option value="feito" ${t.status==='feito'?'selected':''}>Feito</option>
+          <option value="cancelada" ${t.status==='cancelada'?'selected':''}>Cancelada</option>
+        </select>
+      </td>
+      <td>${t.obs||'—'}</td>
+      <td><button class="del-btn" onclick="delTarefa(${tarefas.indexOf(t)})">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+function addTarefa(){
+  const txt=document.getElementById('ta-txt').value.trim();if(!txt) return;
+  tarefas.push({txt,pessoa:document.getElementById('ta-pessoa').value,resp:document.getElementById('ta-resp').value,prazo:document.getElementById('ta-prazo').value,obs:document.getElementById('ta-obs').value,status:'pendente'});
+  lss('fam_tarefas',tarefas);renderTarefas();
+  ['ta-txt','ta-prazo','ta-obs'].forEach(id=>document.getElementById(id).value='');
+}
+function mudarStatusTar(i,v){tarefas[i].status=v;lss('fam_tarefas',tarefas);renderTarefas();}
+function delTarefa(i){tarefas.splice(i,1);lss('fam_tarefas',tarefas);renderTarefas();}
+
+// ── METAS ─────────────────────────────────────────────
+let metas=ls('fam_metas',[]);
+function renderMetas(){
+  const el=document.getElementById('metas-lista');
+  if(!metas.length){el.innerHTML=empty('Nenhuma meta relacional definida.');return;}
+  el.innerHTML=metas.map((m,i)=>{
+    const p=pessoas.find(x=>x.id===m.pessoa);
+    const uc=m.ult?diasSemContato(m.ult):null;
+    return `<div class="item-row">
+      <span style="font-size:1.2rem">🎯</span>
+      <span class="nome" style="flex:1">${m.txt}</span>
+      ${p?`<span class="badge badge-b">${p.nome}</span>`:'<span class="badge badge-o">Geral</span>'}
+      <span class="badge badge-p">${m.freq}</span>
+      ${m.ult?`<span class="det">Último: ${fmtData(m.ult)}</span>`:''}
+      ${uc!==null?`<span class="ultimo-contato ${ucClass(uc)}">${ucTxt(uc)}</span>`:''}
+      <button onclick="cumprirMeta(${i})" class="btn btn-sm btn-g">✓ Cumprir agora</button>
+      <button class="del-btn" onclick="delMeta(${i})">✕</button>
+    </div>`;
+  }).join('');
+}
+function addMeta(){
+  const txt=document.getElementById('me-txt').value.trim();if(!txt) return;
+  metas.push({txt,pessoa:document.getElementById('me-pessoa').value,freq:document.getElementById('me-freq').value,ult:document.getElementById('me-ult').value});
+  lss('fam_metas',metas);renderMetas();
+  ['me-txt','me-ult'].forEach(id=>document.getElementById(id).value='');
+}
+function cumprirMeta(i){metas[i].ult=hojeStr;lss('fam_metas',metas);renderMetas();}
+function delMeta(i){metas.splice(i,1);lss('fam_metas',metas);renderMetas();}
+
+// ── HISTÓRICO ─────────────────────────────────────────
+document.getElementById('hi-data').value=hojeStr;
+let historico=ls('fam_historico',[]);
+const HHIC={Encontro:'🤝',Ligação:'📞',Viagem:'✈️',Celebração:'🎉',Apoio:'🙏',Outro:'📌'};
+function renderHistorico(){
+  const el=document.getElementById('hist-lista');
+  const sorted=[...historico].sort((a,b)=>b.data.localeCompare(a.data));
+  if(!sorted.length){el.innerHTML=empty('Nenhum momento registrado. Cada encontro merece memória!');return;}
+  el.innerHTML=sorted.map((h,_)=>{
+    const ri=historico.indexOf(h);
+    const p=pessoas.find(x=>x.id===h.pessoa);
+    return `<div class="item-row">
+      <span style="font-size:1.2rem">${HHIC[h.cat]||'📌'}</span>
+      <span class="det" style="min-width:80px">${fmtData(h.data)}</span>
+      <span class="nome" style="flex:1">${h.txt}</span>
+      ${p?`<span class="badge badge-b">${p.nome}</span>`:'<span class="badge badge-o">Geral</span>'}
+      <span class="badge badge-p">${h.cat}</span>
+      <span class="det" style="flex:1">${h.obs||''}</span>
+      <button class="del-btn" onclick="delHistorico(${ri})">✕</button>
+    </div>`;
+  }).join('');
+}
+function addHistorico(){
+  const txt=document.getElementById('hi-txt').value.trim(),data=document.getElementById('hi-data').value;
+  if(!txt||!data) return;
+  historico.unshift({txt,data,pessoa:document.getElementById('hi-pessoa').value,cat:document.getElementById('hi-cat').value,obs:document.getElementById('hi-obs').value});
+  lss('fam_historico',historico);renderHistorico();
+  ['hi-txt','hi-obs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('hi-data').value=hojeStr;
+}
+function delHistorico(i){historico.splice(i,1);lss('fam_historico',historico);renderHistorico();}
+
+// ── ORAÇÃO ────────────────────────────────────────────
+document.getElementById('or-data').value=hojeStr;
+let oracao=ls('fam_oracao',[]);
+function renderOracao(){
+  const el=document.getElementById('oracao-lista');
+  const kpi=document.getElementById('kpi-oracao');
+  const ativos=oracao.filter(o=>!o.respondido);
+  const respondidos=oracao.filter(o=>o.respondido);
+  kpi.innerHTML=`
+    <div class="kpi"><div class="kpi-val" style="color:var(--area)">${ativos.length}</div><div class="kpi-lbl">Em Oração</div><div class="kpi-sub">pedidos ativos</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:#16a34a">${respondidos.length}</div><div class="kpi-lbl">Respondidos</div><div class="kpi-sub">bênçãos registradas</div></div>`;
+  if(!oracao.length){el.innerHTML=empty('Nenhum pedido registrado.');return;}
+  const sorted=[...oracao].sort((a,b)=>{if(a.respondido!==b.respondido)return a.respondido?1:-1;return b.data.localeCompare(a.data);});
+  const ub={normal:'badge-b',urgente:'badge-r',louvor:'badge-g'};
+  const ut={normal:'Normal',urgente:'⚡ Urgente',louvor:'🙌 Louvor'};
+  el.innerHTML=sorted.map(o=>{
+    const ri=oracao.indexOf(o);
+    const p=pessoas.find(x=>x.id===o.pessoa);
+    return `<div class="oracao-card ${o.respondido?'respondido':''}">
+      <input type="checkbox" class="oracao-check" ${o.respondido?'checked':''} onchange="toggleOracao(${ri})" title="${o.respondido?'Respondido':'Marcar como respondido'}">
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+          ${p?`<span class="badge badge-b">${p.nome}</span>`:'<span class="badge badge-o">Família / Geral</span>'}
+          <span class="badge ${ub[o.urgencia]||'badge-b'}">${ut[o.urgencia]||o.urgencia}</span>
+          <span class="det">${fmtData(o.data)}</span>
+          ${o.respondido?'<span class="badge badge-g">✓ Respondido</span>':''}
+        </div>
+        <div style="font-size:.8rem;${o.respondido?'text-decoration:line-through;opacity:.5':''}">${o.txt}</div>
+      </div>
+      <button class="del-btn" onclick="delOracao(${ri})">✕</button>
+    </div>`;
+  }).join('');
+}
+function addOracao(){
+  const txt=document.getElementById('or-txt').value.trim();if(!txt) return;
+  oracao.unshift({txt,pessoa:document.getElementById('or-pessoa').value,data:document.getElementById('or-data').value,urgencia:document.getElementById('or-urgencia').value,respondido:false});
+  lss('fam_oracao',oracao);renderOracao();
+  document.getElementById('or-txt').value='';document.getElementById('or-data').value=hojeStr;
+}
+function toggleOracao(i){oracao[i].respondido=!oracao[i].respondido;lss('fam_oracao',oracao);renderOracao();}
+function delOracao(i){oracao.splice(i,1);lss('fam_oracao',oracao);renderOracao();}
+
+// ── INIT ─────────────────────────────────────────────
+popularSelectGrupos();
+popularSelectPessoas(['ta-pessoa','me-pessoa','hi-pessoa','or-pessoa']);
+renderPessoas();
+renderPessoasCheck();
+</script>
+<script src="reminder.js"></script>
+</body>
+</html>

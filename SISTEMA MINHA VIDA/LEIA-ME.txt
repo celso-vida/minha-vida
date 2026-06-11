@@ -1,0 +1,36 @@
+═══════════════════════════════════════════════
+  MINHA VIDA — CELSO  |  Sistema de Gestão Pessoal
+═══════════════════════════════════════════════
+
+COMO USAR
+─────────────────────────────────────────────
+1. Mantenha TODOS os arquivos nesta pasta, juntos.
+2. Abra o arquivo DASHBOARD_GERAL.html com duplo clique
+   (abrirá no seu navegador padrão — Chrome, Edge, etc.)
+3. A partir do Painel Geral, use os botões "Ver Dashboard"
+   para navegar entre as áreas.
+4. Faça backup regularmente usando o botão
+   "⬇️ Exportar Backup" no Painel Geral.
+
+ARQUIVOS
+─────────────────────────────────────────────
+DASHBOARD_GERAL.html        → Painel principal (abrir este)
+DASHBOARD_DEVOCIONAL.html   → Área 1 · Devocional ✅ Completo
+DASHBOARD_PESSOAL.html      → Área 2 · Pessoal (em construção)
+DASHBOARD_FAMILIAR.html     → Área 3 · Familiar (em construção)
+DASHBOARD_FINANCEIRO.html   → Área 4 · Financeiro (em construção)
+DASHBOARD_PROFISSIONAL.html → Área 5 · Profissional (em construção)
+DASHBOARD_MINISTERIAL.html  → Área 6 · Ministerial (em construção)
+DASHBOARD_SOCIAL.html       → Área 7 · Social (em construção)
+CELSO_MEMORIA.md            → Base de conhecimento (referência)
+
+IMPORTANTE
+─────────────────────────────────────────────
+• Os dados que você digita nos dashboards ficam salvos
+  no navegador (localStorage). Faça backup regularmente.
+• Sempre use o mesmo navegador para não perder os dados.
+• Quando receber arquivos atualizados do Claude,
+  substitua apenas o arquivo HTML correspondente —
+  seus dados não serão apagados.
+
+Última atualização: Junho 2026

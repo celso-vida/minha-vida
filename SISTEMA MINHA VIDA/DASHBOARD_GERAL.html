@@ -1,0 +1,2026 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minha Vida — Celso</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-sync.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #DBDBDB; --primary: #1A4168; --white: #fff;
+  --border: #c0c8d0; --radius: 14px; --shadow: 0 4px 18px rgba(0,0,0,.10);
+  --brasil: #dcfce7; --italia: #dbeafe; --emirados: #fee2e2;
+  --brasil-b: #16a34a; --italia-b: #2563eb; --emirados-b: #dc2626;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--primary); min-height:100vh; padding:18px 14px 60px; }
+
+/* ── HEADER ─────────────────────────────────────── */
+header { display:flex; align-items:center; gap:18px; max-width:1200px; margin:0 auto 18px; flex-wrap:wrap; }
+#avatar-wrap { width:72px; height:72px; border-radius:50%; overflow:hidden; cursor:pointer; flex-shrink:0; border:3px solid var(--primary); background:#c8d8e8; display:flex; align-items:center; justify-content:center; position:relative; }
+#avatar-wrap:hover::after { content:'📷'; position:absolute; font-size:1.4rem; }
+#avatar-img { width:100%; height:100%; object-fit:cover; }
+#avatar-ini { font-size:1.8rem; font-weight:700; color:var(--primary); }
+.header-text { flex:1; }
+.header-title { font-family:'Caveat',cursive; font-size:2.2rem; font-weight:700; color:var(--primary); line-height:1; }
+.header-sub { font-size:.78rem; color:var(--primary); opacity:.6; margin-top:2px; }
+.header-clocks { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.clock-card { background:var(--white); border:1px solid var(--border); border-radius:10px; padding:8px 14px; text-align:center; cursor:pointer; transition:all .15s; min-width:120px; }
+.clock-card.primary { border-width:2px; box-shadow:var(--shadow); transform:scale(1.06); }
+.clock-card.primary.brasil { border-color:var(--brasil-b); background:#f0fdf4; }
+.clock-card.primary.italia { border-color:var(--italia-b); background:#eff6ff; }
+.clock-card.primary.emirados { border-color:var(--emirados-b); background:#fff5f5; }
+.clock-inner { display:flex; align-items:center; gap:10px; }
+.clock-flag { flex-shrink:0; display:flex; align-items:center; }
+.clock-flag img { width:36px; height:auto; border-radius:4px; box-shadow:0 1px 4px rgba(0,0,0,.18); display:block; }
+.clock-left { text-align:left; }
+.clock-right { text-align:right; }
+.clock-city { font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; opacity:.6; }
+.clock-time { font-size:1.1rem; font-weight:700; letter-spacing:.05em; font-variant-numeric:tabular-nums; }
+.clock-date { font-size:.6rem; opacity:.5; }
+.clock-temp { font-size:1.1rem; font-weight:700; color:var(--primary); }
+.clock-temp-lbl { font-size:.58rem; opacity:.5; }
+.primary-hint { font-size:.6rem; opacity:.45; margin-top:3px; text-align:center; }
+
+/* ── SEÇÕES ─────────────────────────────────────── */
+.sec-label { font-size:.65rem; text-transform:uppercase; letter-spacing:.13em; color:var(--primary); font-weight:700; opacity:.5; max-width:1200px; margin:0 auto 6px; padding-left:2px; }
+.block { background:var(--white); border-radius:var(--radius); padding:16px 18px; max-width:1200px; margin:0 auto 14px; border:1px solid var(--border); }
+.block-title { font-size:.82rem; color:var(--primary); font-weight:800; text-transform:uppercase; letter-spacing:.08em; margin-bottom:10px; padding-bottom:7px; border-bottom:2px solid var(--bg); display:flex; align-items:center; gap:6px; }
+.add-btn { background:var(--primary); color:#fff; border:none; border-radius:7px; padding:5px 13px; font-size:.75rem; font-weight:700; cursor:pointer; font-family:inherit; }
+.add-btn:hover { opacity:.85; }
+.add-btn.verde { background:#16a34a; }
+.input-std { background:#f0f4f8; border:1px solid var(--border); border-radius:7px; padding:6px 10px; font-size:.78rem; font-family:inherit; color:var(--primary); }
+.input-std:focus { outline:none; border-color:var(--primary); }
+.sel-std { background:#f0f4f8; border:1px solid var(--border); border-radius:7px; padding:6px 10px; font-size:.76rem; font-family:inherit; color:var(--primary); cursor:pointer; }
+.empty-msg { font-size:.78rem; color:#aaa; font-style:italic; }
+
+/* ── ALERTA VIAGEM ───────────────────────────────── */
+.viagem-banner { max-width:1200px; margin:0 auto 12px; background:#fffbeb; border:1px solid #f59e0b; border-radius:10px; padding:10px 16px; font-size:.82rem; color:#92400e; display:flex; align-items:center; gap:10px; }
+
+
+/* ── 7 ÁREAS (slim, uma linha) ───────────────────── */
+.areas-row { display:flex; gap:10px; max-width:1200px; margin:0 auto 14px; overflow-x:auto; padding-bottom:4px; }
+.area-card { border-radius:12px; padding:14px 12px; flex:1 1 0; min-width:120px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; transition:transform .15s,box-shadow .15s; cursor:default; }
+.area-card:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,.15); }
+.area-icon-big { font-size:1.6rem; }
+.area-title-sm { font-size:.78rem; font-weight:800; line-height:1.2; }
+.area-num-sm { font-size:.62rem; opacity:.65; }
+.area-status-dots { display:flex; gap:5px; justify-content:center; }
+.sdot { width:10px; height:10px; border-radius:50%; cursor:pointer; border:2px solid rgba(255,255,255,.4); transition:transform .1s; }
+.sdot:hover { transform:scale(1.3); }
+.sdot.active { border-color:#fff; box-shadow:0 0 0 2px rgba(0,0,0,.2); }
+.sdot-verde { background:#22c55e; }
+.sdot-amarelo { background:#eab308; }
+.sdot-vermelho { background:#ef4444; }
+.area-dash-sm { background:rgba(255,255,255,.28); border:none; border-radius:7px; padding:5px 10px; font-size:.68rem; font-weight:700; cursor:pointer; font-family:inherit; width:100%; transition:background .15s; }
+.area-dash-sm:hover { background:rgba(255,255,255,.5); }
+
+/* ── PIPELINE KANBAN ─────────────────────────────── */
+.pipe-wrap { overflow-x:auto; }
+.pipe-grid { display:flex; gap:10px; min-width:700px; }
+.pipe-col { flex:1; min-width:0; background:#f5f7fa; border-radius:10px; padding:10px; }
+.pipe-col-title { font-size:.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em; text-align:center; padding:4px 8px; border-radius:6px; margin-bottom:8px; }
+.pipe-col-title.pendente   { background:#e2e8f0; color:#475569; }
+.pipe-col-title.andamento  { background:#dbeafe; color:#1e40af; }
+.pipe-col-title.aguardando { background:#fef3c7; color:#92400e; }
+.pipe-col-title.concluido  { background:#dcfce7; color:#15803d; }
+.pipe-col-title.cancelado  { background:#fee2e2; color:#991b1b; }
+.pipe-card { border-radius:8px; padding:9px 10px; margin-bottom:7px; color:#fff; font-size:.76rem; position:relative; box-shadow:0 2px 6px rgba(0,0,0,.12); }
+.pipe-card-title { font-weight:700; margin-bottom:4px; line-height:1.3; }
+.pipe-card-area { font-size:.62rem; opacity:.8; margin-bottom:6px; }
+.pipe-card-btns { display:flex; gap:4px; flex-wrap:wrap; }
+.pipe-mv { background:rgba(255,255,255,.22); border:none; border-radius:5px; padding:2px 7px; font-size:.62rem; font-weight:700; cursor:pointer; color:#fff; font-family:inherit; }
+.pipe-mv:hover { background:rgba(255,255,255,.4); }
+.pipe-del { background:rgba(0,0,0,.15); border:none; border-radius:5px; padding:2px 6px; font-size:.62rem; cursor:pointer; color:#fff; font-family:inherit; }
+.add-pipe-row { display:flex; gap:7px; margin-top:10px; flex-wrap:wrap; }
+
+/* ── AGENDA ──────────────────────────────────────── */
+.agenda-list { list-style:none; }
+.agenda-item { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:9px; margin-bottom:6px; color:#fff; font-size:.8rem; }
+.agenda-data { font-size:.72rem; opacity:.85; min-width:80px; font-weight:600; }
+.agenda-hora { font-size:.72rem; opacity:.75; min-width:50px; }
+.agenda-txt { flex:1; font-weight:600; }
+.agenda-area { font-size:.62rem; opacity:.8; }
+.agenda-del { background:rgba(255,255,255,.2); border:none; border-radius:5px; padding:2px 7px; font-size:.65rem; cursor:pointer; color:#fff; font-family:inherit; }
+.add-agenda-row { display:flex; gap:7px; margin-top:10px; flex-wrap:wrap; align-items:center; }
+.fuso-badge { display:inline-flex; align-items:center; gap:4px; background:#f0f4f8; border:1px solid var(--border); border-radius:6px; padding:3px 10px; font-size:.72rem; font-weight:600; color:var(--primary); }
+
+/* ── CALENDÁRIO ──────────────────────────────────── */
+.cal-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.cal-nav-btn { background:#f0f4f8; border:1px solid var(--border); border-radius:6px; padding:3px 13px; font-size:.82rem; cursor:pointer; color:var(--primary); font-weight:700; }
+.cal-nav-btn:hover { background:#dde3ea; }
+.cal-titulo { font-size:.92rem; font-weight:800; color:var(--primary); flex:1; }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+.cal-dn { font-size:.65rem; font-weight:700; color:var(--primary); opacity:.4; text-align:center; padding-bottom:3px; }
+.cal-day { font-size:.76rem; padding:5px 2px; border-radius:6px; text-align:center; position:relative; cursor:default; display:flex; align-items:center; justify-content:center; gap:3px; }
+.cal-day.hoje { background:var(--primary)!important; color:#fff!important; font-weight:800; border-radius:50%; }
+.cal-day.viagem-dia { outline:2px solid #f59e0b; outline-offset:-1px; }
+.cal-day.viagem-dia::after { content:'✈'; font-size:.45rem; position:absolute; top:1px; right:2px; }
+.feriado-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; display:inline-block; }
+.cal-legend { margin-top:8px; font-size:.7rem; color:#555; display:flex; gap:12px; flex-wrap:wrap; }
+.cal-legend span { display:flex; align-items:center; gap:4px; }
+.dot { width:9px; height:9px; border-radius:50%; display:inline-block; flex-shrink:0; }
+#cal-info { margin-top:10px; font-size:.76rem; color:#444; line-height:1.7; }
+.local-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 12px; border-radius:20px; font-size:.72rem; font-weight:700; margin-left:8px; }
+
+/* ── TRADUTOR ────────────────────────────────────── */
+.trad-grid { display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:start; }
+.trad-textarea { width:100%; background:#f5f7fa; border:1px solid var(--border); border-radius:9px; padding:10px; font-size:.82rem; font-family:inherit; color:var(--primary); min-height:80px; resize:vertical; }
+.trad-textarea:focus { outline:none; border-color:var(--primary); }
+.trad-result { width:100%; background:#eef6ff; border:1px solid #93c5fd; border-radius:9px; padding:10px; font-size:.82rem; min-height:80px; color:var(--primary); white-space:pre-wrap; }
+.trad-mid { display:flex; flex-direction:column; align-items:center; gap:8px; padding-top:6px; }
+.lang-pair { display:flex; gap:5px; flex-wrap:wrap; justify-content:center; }
+.lbtn { background:#f0f4f8; border:1px solid var(--border); border-radius:6px; padding:4px 10px; font-size:.72rem; font-weight:700; cursor:pointer; color:var(--primary); font-family:inherit; }
+.lbtn.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+.trad-btn { background:var(--primary); color:#fff; border:none; border-radius:8px; padding:7px 14px; font-size:.78rem; font-weight:700; cursor:pointer; font-family:inherit; width:100%; }
+.trad-btn:hover { opacity:.85; }
+.trad-speak-btn { background:#f0f4f8; border:1px solid var(--border); border-radius:6px; padding:2px 8px; font-size:.85rem; cursor:pointer; transition:background .15s; }
+.trad-speak-btn:hover { background:#dde3ea; }
+.trad-speak-btn.speaking { background:#dbeafe; border-color:#93c5fd; }
+
+/* ── LINKS RÁPIDOS ───────────────────────────────── */
+.links-flex { display:flex; flex-wrap:wrap; gap:9px; }
+.link-btn { display:inline-flex; align-items:center; gap:6px; background:#f0f4f8; border:1px solid var(--border); border-radius:8px; padding:7px 13px; font-size:.78rem; font-weight:600; color:var(--primary); text-decoration:none; transition:background .15s; position:relative; }
+.link-btn:hover { background:#dde3ea; }
+.link-x { font-size:.65rem; color:#bbb; cursor:pointer; margin-left:2px; }
+.link-x:hover { color:#e74c3c; }
+.add-link-row { display:flex; gap:7px; margin-top:10px; flex-wrap:wrap; }
+
+/* ── BACKUP ──────────────────────────────────────── */
+.backup-row { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.backup-info { flex:1; font-size:.8rem; color:var(--primary); opacity:.7; }
+
+/* ── SENHAS ──────────────────────────────────────── */
+.senha-row{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;margin-bottom:5px;background:#f5f7fa;border:1px solid var(--border);font-size:.78rem;flex-wrap:wrap;}
+.senha-row .sv-nome{font-weight:700;min-width:90px;}
+.senha-row .sv-user{opacity:.6;font-size:.72rem;flex:1;}
+.senha-val{font-family:monospace;background:#f0f4f8;border-radius:5px;padding:2px 8px;font-size:.78rem;letter-spacing:.05em;}
+.sv-show-btn{background:#dbeafe;border:none;border-radius:5px;padding:2px 8px;font-size:.7rem;cursor:pointer;color:#1e40af;}
+.sv-copy-btn{background:#dcfce7;border:none;border-radius:5px;padding:2px 8px;font-size:.7rem;cursor:pointer;color:#15803d;}
+
+/* ── AGENDA SEMANAL ──────────────────────────────── */
+.ag-sem-head{display:flex;border-bottom:2px solid var(--border);margin-bottom:0;}
+.ag-sem-hcol{width:46px;flex-shrink:0;}
+.ag-sem-hdias{display:flex;flex:1;}
+.ag-sem-hdia{flex:1;min-width:82px;text-align:center;padding:5px 3px;font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;border-left:1px solid var(--border);}
+.ag-sem-hdia .num{font-size:.75rem;font-weight:400;opacity:.6;margin-top:2px;}
+.ag-sem-hdia.hoje-h{background:var(--primary);color:#fff;border-radius:6px 6px 0 0;}
+.ag-sem-body{display:flex;position:relative;}
+.ag-sem-horas{width:46px;flex-shrink:0;position:relative;}
+.ag-sem-hl{position:absolute;right:5px;font-size:.58rem;font-weight:700;opacity:.35;transform:translateY(-50%);white-space:nowrap;color:var(--primary);}
+.ag-sem-dias{display:flex;flex:1;position:relative;}
+.ag-sem-col{flex:1;min-width:82px;position:relative;border-left:1px solid var(--border);}
+.ag-sem-col.hoje-col{background:rgba(26,65,104,.025);}
+.ag-sem-hline{position:absolute;left:0;right:0;border-top:1px solid #e8ecf0;pointer-events:none;}
+.ag-sem-hline.meio{border-top:1px dashed #eff1f4;}
+.ag-sem-ev{position:absolute;left:2px;right:2px;border-radius:4px;padding:3px 5px;font-size:.62rem;overflow:hidden;cursor:default;border:2px solid #000 !important;box-shadow:0 1px 4px rgba(0,0,0,.18);}
+.ag-sem-ev:hover{z-index:10;box-shadow:0 3px 10px rgba(0,0,0,.3);}
+.ag-sem-ev.bloco{opacity:.92;}
+.ag-sem-ev.comp{opacity:1;}
+.ag-sem-ev-tit{font-weight:800;color:#fff;line-height:1.3;font-size:.62rem;}
+.ag-sem-ev-hr{font-size:.56rem;color:rgba(255,255,255,.8);margin-top:1px;}
+.ag-sem-agora{position:absolute;left:0;right:0;border-top:2px solid #ef4444;z-index:5;pointer-events:none;}
+.ag-sem-agora::before{content:'';position:absolute;left:-4px;top:-4px;width:8px;height:8px;background:#ef4444;border-radius:50%;}
+.ag-sem-del-btn{position:absolute;top:1px;right:2px;background:rgba(0,0,0,.25);border:none;border-radius:3px;color:#fff;font-size:.55rem;cursor:pointer;padding:1px 4px;opacity:0;transition:opacity .15s;}
+.ag-sem-edit-btn { background:rgba(255,255,255,.2); border:none; border-radius:5px; padding:2px 7px; font-size:.65rem; cursor:pointer; color:#fff; font-family:inherit; position:absolute; top:3px; right:26px; opacity:0; transition:opacity .15s; }
+.ag-sem-ev:hover .ag-sem-edit-btn { opacity:1; }
+/* Modal de edição de bloco */
+#bloco-edit-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9999; align-items:center; justify-content:center; }
+#bloco-edit-overlay.open { display:flex; }
+#bloco-edit-box { background:#fff; border-radius:14px; padding:22px 24px; width:min(420px,94vw); box-shadow:0 8px 32px rgba(0,0,0,.22); }
+#bloco-edit-box h3 { font-size:.9rem; font-weight:800; color:var(--primary); margin-bottom:14px; }
+.bef { margin-bottom:10px; }
+.bef label { display:block; font-size:.72rem; font-weight:700; color:var(--primary); opacity:.6; margin-bottom:3px; text-transform:uppercase; }
+.bef input, .bef select { width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:.82rem; font-family:inherit; color:var(--primary); }
+.bef-row { display:flex; gap:10px; }
+.bef-row .bef { flex:1; }
+#bloco-edit-btns { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
+#bloco-edit-btns button { border:none; border-radius:8px; padding:7px 18px; font-size:.8rem; font-weight:700; cursor:pointer; font-family:inherit; }
+#bloco-edit-save { background:var(--primary); color:#fff; }
+#bloco-edit-cancel { background:#f1f5f9; color:var(--primary); }
+.ag-sem-ev:hover .ag-sem-del-btn{opacity:1;}
+
+/* ── FAMÍLIA ─────────────────────────────────────── */
+.fam-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:8px; }
+.person { background:#f0f4f8; border-radius:9px; padding:9px 12px; font-size:.77rem; border:1px solid var(--border); }
+.person strong { display:block; color:var(--primary); font-weight:700; margin-bottom:2px; }
+.person span { color:#666; font-size:.71rem; }
+.fam-label { grid-column:1/-1; font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--primary); opacity:.4; margin-top:8px; margin-bottom:2px; }
+
+/* ── ANIVERSÁRIO ALERT ───────────────────────────── */
+.aniv-alert { max-width:1200px; margin:0 auto 12px; background:#fffbeb; border:1px solid #e6c840; border-radius:9px; padding:8px 14px; font-size:.78rem; color:#7a5800; font-weight:500; }
+
+/* ── FICHA DO DIA ────────────────────────────────── */
+.ficha-header { display:flex; align-items:center; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
+.ficha-title { font-family:'Caveat',cursive; font-size:1.6rem; font-weight:700; color:var(--primary); flex:1; }
+.ficha-comp { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:9px; margin-bottom:5px; border-left:4px solid var(--primary); background:#f8fafc; font-size:.8rem; flex-wrap:wrap; }
+.ficha-comp .fc-hora { font-weight:800; font-size:.85rem; min-width:110px; color:var(--primary); }
+.ficha-comp .fc-txt { flex:1; font-weight:600; }
+.ficha-comp .fc-area { font-size:.68rem; opacity:.6; }
+.ficha-comp.copa { background:#fffbeb; border-left-color:#f59e0b; }
+.ficha-task { display:flex; align-items:center; gap:10px; padding:7px 12px; border-radius:8px; margin-bottom:4px; background:#f5f7fa; border:1px solid var(--border); font-size:.78rem; }
+.ficha-task input[type=checkbox] { accent-color:var(--primary); width:15px; height:15px; }
+.fc-status { font-size:.65rem; font-weight:700; padding:2px 7px; border-radius:20px; white-space:nowrap; }
+.fc-s-pendente   { background:#e2e8f0; color:#475569; }
+.fc-s-andamento  { background:#dbeafe; color:#1e40af; }
+.fc-s-aguardando { background:#fef9c3; color:#854d0e; }
+.fc-s-concluido  { background:#dcfce7; color:#15803d; }
+.fc-s-cancelado  { background:#fee2e2; color:#991b1b; }
+
+/* ── PRINT CSS ───────────────────────────────────── */
+@media print {
+  body > *:not(#ficha-print-wrap) { display:none !important; }
+  #ficha-print-wrap { display:block !important; max-width:100%; }
+  .no-print { display:none !important; }
+  .ficha-comp, .ficha-task { break-inside:avoid; }
+  header, .tabs, .back-btn { display:none !important; }
+  body { padding:0; background:#fff; }
+  .block { box-shadow:none; border:1px solid #ccc; }
+}
+</style>
+
+<script>
+(function(){
+  var src=localStorage.getItem('foto_perfil');
+  if(!src)return;
+  var lnk=document.querySelector('link[rel~="icon"]');
+  if(!lnk){lnk=document.createElement('link');lnk.rel='icon';document.head.appendChild(lnk);}
+  lnk.href=src;
+})();
+</script>
+</head>
+<body>
+
+<!-- ══ HEADER ══════════════════════════════════════════ -->
+<header>
+  <div id="avatar-wrap" onclick="document.getElementById('foto-input').click()" title="Clique para trocar a foto">
+    <img id="avatar-img" src="" style="display:none;width:100%;height:100%;object-fit:cover;">
+    <span id="avatar-ini">C</span>
+    <input type="file" id="foto-input" accept="image/*" style="display:none" onchange="loadFoto(this)">
+  </div>
+  <div class="header-text">
+    <div class="header-title">Minha Vida — Celso</div>
+    <div class="header-sub" id="datahoje"></div>
+  </div>
+  <div class="header-clocks" id="clocks-wrap">
+    <!-- gerado por JS -->
+  </div>
+</header>
+
+<!-- ══ ALERTA DE VIAGEM PRÓXIMA ════════════════════════ -->
+<div class="viagem-banner" id="viagem-banner" style="display:none"></div>
+
+<!-- ══ LEMBRETES DO DIA ════════════════════════════════ -->
+<div id="lembretes-div"></div>
+
+
+<!-- ══ PALAVRA DO DIA ══════════════════════════════════ -->
+<div class="sec-label">Versículo da Semana</div>
+<div class="block" id="palavra-block">
+  <!-- Exibição estilizada -->
+  <div id="palavra-display" style="display:none;position:relative;">
+    <div style="font-size:2.5rem;color:var(--primary);opacity:.12;position:absolute;top:-4px;left:0;font-family:Georgia,serif;line-height:1">"</div>
+    <div id="palavra-display-txt" style="font-size:.95rem;font-style:italic;line-height:1.75;color:var(--primary);padding:8px 18px 4px 28px;"></div>
+    <div id="palavra-display-ref" style="font-size:.78rem;font-weight:700;color:var(--primary);opacity:.55;padding-left:28px;margin-top:4px;"></div>
+    <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
+      <button class="add-btn sec" style="font-size:.7rem;padding:4px 10px;" onclick="editarPalavra()">✏️ Editar</button>
+      <span style="font-size:.65rem;opacity:.4;">Sincronizado com o Dashboard Devocional</span>
+    </div>
+  </div>
+  <!-- Formulário de edição -->
+  <div id="palavra-form">
+    <div style="flex:1">
+      <textarea id="palavra-txt" class="input-std" style="width:100%;resize:none;min-height:60px;margin-bottom:6px;" placeholder="Versículo ou reflexão da semana..."></textarea>
+      <input id="palavra-ref" class="input-std" type="text" placeholder="Referência (ex: Ageu 2:4 — NAA)" style="width:100%;margin-bottom:8px">
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="add-btn" onclick="salvarPalavra()">💾 Salvar</button>
+      <button class="add-btn sec" onclick="cancelarEditarPalavra()" id="btn-cancelar-palavra" style="display:none">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 7 ÁREAS ═════════════════════════════════════════ -->
+<div class="sec-label">As 7 Áreas da Vida</div>
+<div class="areas-row" id="areas-row"></div>
+
+<!-- ══ FICHA DO DIA ═════════════════════════════════════ -->
+<div class="sec-label no-print">Ficha do Dia</div>
+<div class="block" id="ficha-print-wrap">
+  <div class="ficha-header">
+    <div class="ficha-title">📋 Ficha do Dia</div>
+    <input class="input-std" id="ficha-data" type="date" onchange="renderFichaDia()" style="font-size:.8rem;">
+    <button class="add-btn" onclick="imprimirFicha()" style="background:#64748b;">🖨️ Imprimir</button>
+  </div>
+  <div id="ficha-dia-label" style="font-family:'Caveat',cursive;font-size:1.1rem;color:var(--primary);opacity:.7;margin-bottom:14px;"></div>
+
+  <!-- Versículo do dia -->
+  <div id="ficha-versiculo" style="background:#f0f6ff;border-left:4px solid var(--primary);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:14px;display:none;">
+    <div id="ficha-versic-txt" style="font-size:.85rem;font-style:italic;line-height:1.6;color:var(--primary);"></div>
+    <div id="ficha-versic-ref" style="font-size:.72rem;font-weight:700;opacity:.55;margin-top:3px;"></div>
+  </div>
+
+  <!-- Devocional do Dia -->
+  <div id="ficha-devocional" style="margin-bottom:16px;display:none;">
+    <div style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;opacity:.45;margin-bottom:8px;">🙏 Devocional do Dia</div>
+    <div style="background:#f0f6ff;border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;">
+
+      <!-- Leitura bíblica -->
+      <div id="ficha-leitura-div" style="display:none;">
+        <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#5B9BD5;margin-bottom:5px;">📖 Leitura Bíblica do Dia</div>
+        <div id="ficha-leitura"></div>
+      </div>
+
+      <!-- Oração -->
+      <div id="ficha-oracao-div" style="display:none;">
+        <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#6366f1;margin-bottom:5px;">🙏 Motivos de Oração</div>
+        <div id="ficha-oracao"></div>
+      </div>
+
+      <!-- Livro do mês -->
+      <div id="ficha-livro-div" style="display:none;">
+        <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#16a34a;margin-bottom:5px;">📚 Leitura do Mês</div>
+        <div id="ficha-livro"></div>
+      </div>
+
+      <!-- Santificação -->
+      <div id="ficha-sant-div" style="display:none;">
+        <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#9333ea;margin-bottom:5px;">✨ Foco de Santificação da Semana</div>
+        <div id="ficha-sant"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Compromissos -->
+  <div style="margin-bottom:16px;">
+    <div style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;opacity:.45;margin-bottom:8px;">📌 Compromissos do dia</div>
+    <div id="ficha-compromissos"></div>
+  </div>
+
+  <!-- Tarefas -->
+  <div>
+    <div style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;opacity:.45;margin-bottom:8px;">✅ Tarefas</div>
+    <div id="ficha-tarefas"></div>
+  </div>
+
+  <!-- Espaço para notas (imprimível) -->
+  <div style="margin-top:16px;padding-top:12px;border-top:2px solid var(--bg);">
+    <div style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;opacity:.45;margin-bottom:6px;">📝 Notas do dia</div>
+    <textarea class="input-std no-print" id="ficha-notas" style="width:100%;min-height:60px;resize:vertical;" placeholder="Anotações, reflexões, prioridades do dia..."></textarea>
+    <div class="print-only" style="min-height:80px;border:1px dashed #ccc;border-radius:6px;padding:8px;display:none;"></div>
+  </div>
+</div>
+
+<!-- ══ PIPELINE DE TAREFAS ════════════════════════════ -->
+<div class="sec-label no-print">Pipeline de Tarefas</div>
+<div class="block">
+  <div class="block-title">✅ Tarefas — Por Status</div>
+  <div class="pipe-wrap">
+    <div class="pipe-grid" id="pipe-grid"></div>
+  </div>
+  <div class="add-pipe-row">
+    <input class="input-std" id="pipe-txt" type="text" placeholder="Nova tarefa..." style="flex:1;min-width:140px" onkeydown="if(event.key==='Enter')addPipe()">
+    <select class="sel-std" id="pipe-area">
+      <option value="Devocional">Devocional</option>
+      <option value="Pessoal">Pessoal</option>
+      <option value="Familiar">Familiar</option>
+      <option value="Financeiro">Financeiro</option>
+      <option value="Profissional">Profissional</option>
+      <option value="Ministerial">Ministerial</option>
+      <option value="Social">Social</option>
+      <option value="Geral">Geral</option>
+    </select>
+    <button class="add-btn" onclick="addPipe()">+ Adicionar</button>
+  </div>
+</div>
+
+<!-- ══ AGENDA ══════════════════════════════════════════ -->
+<div class="sec-label">Agenda</div>
+<div class="block">
+  <div class="block-title" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
+    <span>📌 Agenda Geral <span id="ag-filtro-label" style="font-size:.72rem;font-weight:400;opacity:.6;margin-left:6px;"></span></span>
+    <span id="fuso-agenda" class="fuso-badge"></span>
+  </div>
+  <!-- FILTROS -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center;">
+    <button class="lbtn active" id="ag-f-hoje" onclick="filtrarAgendaDia('hoje')">Hoje</button>
+    <button class="lbtn" id="ag-f-semana" onclick="filtrarAgendaSemana()">Esta semana</button>
+    <button class="lbtn" id="ag-f-mes" onclick="filtrarAgendaMes()">Este mês</button>
+    <button class="lbtn" id="ag-f-todos" onclick="filtrarAgendaTodos()">Todos</button>
+    <span style="font-size:.72rem;opacity:.5;">ou período:</span>
+    <input class="input-std" id="ag-f-de" type="date" style="width:130px" onchange="filtrarAgendaPeriodo()">
+    <span style="font-size:.75rem;opacity:.5;">até</span>
+    <input class="input-std" id="ag-f-ate" type="date" style="width:130px" onchange="filtrarAgendaPeriodo()">
+    <button class="lbtn" onclick="limparFiltroAg()" style="opacity:.6;">✕ Limpar</button>
+  </div>
+  <ul class="agenda-list" id="agenda-list"></ul>
+  <div class="add-agenda-row" style="margin-top:14px;border-top:2px solid var(--bg);padding-top:12px;">
+    <input class="input-std" id="ag-txt" type="text" placeholder="Novo compromisso..." style="flex:1;min-width:130px">
+    <input class="input-std" id="ag-data" type="date">
+    <span style="font-size:.72rem;opacity:.5;white-space:nowrap;">Início</span>
+    <input class="input-std" id="ag-hora" type="time" value="09:00" style="width:90px">
+    <span style="font-size:.72rem;opacity:.5;white-space:nowrap;">Fim</span>
+    <input class="input-std" id="ag-hora-fim" type="time" value="10:00" style="width:90px">
+    <input class="input-std" id="ag-nota" type="text" placeholder="Local / observação" style="flex:1;min-width:100px">
+    <select class="sel-std" id="ag-area">
+      <option value="Devocional">Devocional</option>
+      <option value="Pessoal">Pessoal</option>
+      <option value="Familiar">Familiar</option>
+      <option value="Financeiro">Financeiro</option>
+      <option value="Profissional">Profissional</option>
+      <option value="Ministerial">Ministerial</option>
+      <option value="Social">Social</option>
+      <option value="Lazer">Lazer</option>
+      <option value="Geral">Geral</option>
+    </select>
+    <button class="add-btn" onclick="addAgenda()">+ Adicionar</button>
+  </div>
+</div>
+
+<!-- ══ AGENDA SEMANAL ══════════════════════════════════ -->
+<div class="sec-label">Agenda Semanal</div>
+<div class="block">
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+    <div style="display:flex;gap:5px;">
+      <button class="lbtn active" id="asm-base"  onclick="setAgSemModo('base',this)">📋 Agenda Base</button>
+      <button class="lbtn"        id="asm-atual" onclick="setAgSemModo('atual',this)">📅 Semana Atual</button>
+      <button class="lbtn"        id="asm-sel"   onclick="setAgSemModo('sel',this)">🔍 Selecionar</button>
+    </div>
+    <div id="asm-nav" style="display:none;gap:6px;align-items:center;margin-left:auto;">
+      <button class="cal-nav-btn" onclick="navSem(-1)">‹</button>
+      <span id="asm-label" style="font-size:.8rem;font-weight:700;min-width:180px;text-align:center;color:var(--primary);"></span>
+      <button class="cal-nav-btn" onclick="navSem(1)">›</button>
+      <button class="lbtn" style="font-size:.7rem;padding:3px 10px;" onclick="navSemHoje()">Hoje</button>
+    </div>
+  </div>
+  <div style="overflow-x:auto;border:1px solid var(--border);border-radius:10px;">
+    <div id="ag-sem-container" style="min-width:640px;background:var(--white);border-radius:10px;"></div>
+  </div>
+  <div style="margin-top:14px;padding-top:12px;border-top:2px solid var(--bg);">
+    <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
+      <span style="font-size:.7rem;font-weight:700;opacity:.5;text-transform:uppercase;letter-spacing:.06em;">Adicionar:</span>
+      <button class="lbtn active" id="asf-t-bloco" onclick="setAgSemTipo('bloco',this)">📦 Bloco de Área</button>
+      <button class="lbtn"        id="asf-t-comp"  onclick="setAgSemTipo('comp',this)">📌 Compromisso</button>
+    </div>
+    <div class="add-pipe-row" style="flex-wrap:wrap;gap:7px;">
+      <select class="sel-std" id="asf-area" style="min-width:110px;"><option>Devocional</option><option>Pessoal</option><option>Familiar</option><option>Financeiro</option><option>Profissional</option><option>Ministerial</option><option>Social</option><option>Geral</option></select>
+      <input class="input-std" id="asf-titulo" type="text" placeholder="Título (vazio = BLOCO [ÁREA])" style="flex:2;min-width:160px;">
+      <select class="sel-std" id="asf-dia"><option value="0">Segunda</option><option value="1">Terça</option><option value="2">Quarta</option><option value="3">Quinta</option><option value="4">Sexta</option><option value="5">Sábado</option><option value="6">Domingo</option></select>
+      <select class="sel-std" id="asf-ini" style="width:90px;"></select>
+      <span style="font-size:.75rem;opacity:.5;align-self:center;">→</span>
+      <select class="sel-std" id="asf-fim" style="width:90px;"></select>
+      <select class="sel-std" id="asf-recorr" style="min-width:150px;"><option value="base">Toda semana (Base)</option><option value="semana">Só esta semana</option></select>
+      <button class="add-btn" onclick="addAgSemItem()">+ Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CALENDÁRIO ══════════════════════════════════════ -->
+<div class="sec-label">Calendário Geral</div>
+<div class="block">
+  <div class="cal-header">
+    <button class="cal-nav-btn" onclick="mudarMes(-1)">‹</button>
+    <span class="cal-titulo" id="cal-titulo"></span>
+    <button class="cal-nav-btn" onclick="mudarMes(1)">›</button>
+    <span id="cal-local-badge"></span>
+  </div>
+  <div class="cal-grid" id="cal-grid"></div>
+  <div class="cal-legend">
+    <span><span class="dot" style="background:var(--primary)"></span> Hoje</span>
+    <span><span class="dot" style="background:#dcfce7;border:1px solid #16a34a"></span> Brasil 🇧🇷</span>
+    <span><span class="dot" style="background:#dbeafe;border:1px solid #2563eb"></span> Itália 🇮🇹</span>
+    <span><span class="dot" style="background:#fee2e2;border:1px solid #dc2626"></span> Emirados 🇦🇪</span>
+    <span><span style="font-size:.8rem">✈️</span> Dia de viagem</span>
+    <span><span class="dot" style="background:#16a34a"></span> Feriado BR</span>
+    <span><span class="dot" style="background:#2563eb"></span> Feriado IT</span>
+    <span><span class="dot" style="background:#dc2626"></span> Feriado AE</span>
+    <span><span style="background:#111;color:#fff;border-radius:50%;width:14px;height:14px;font-size:.55rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;">n</span> Nº de compromissos</span>
+  </div>
+  <div id="cal-info"></div>
+</div>
+
+<!-- ══ TRADUTOR ════════════════════════════════════════ -->
+<div class="sec-label">Tradutor</div>
+<div class="block">
+  <div class="block-title">🌐 Português · Italiano · Inglês</div>
+  <div class="lang-pair" style="margin-bottom:10px">
+    <button class="lbtn active" id="lbtn-pt-it" onclick="setLang('pt','it')">PT → IT</button>
+    <button class="lbtn" id="lbtn-pt-en" onclick="setLang('pt','en')">PT → EN</button>
+    <button class="lbtn" id="lbtn-it-pt" onclick="setLang('it','pt')">IT → PT</button>
+    <button class="lbtn" id="lbtn-en-pt" onclick="setLang('en','pt')">EN → PT</button>
+    <button class="lbtn" id="lbtn-it-en" onclick="setLang('it','en')">IT → EN</button>
+    <button class="lbtn" id="lbtn-en-it" onclick="setLang('en','it')">EN → IT</button>
+  </div>
+  <div class="trad-grid">
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:.68rem;font-weight:700;opacity:.5;text-transform:uppercase" id="trad-from-label">Português</span>
+        <button class="trad-speak-btn" onclick="falarTexto('trad-input', tradLangFrom)" title="Ouvir texto original">🔊</button>
+      </div>
+      <textarea class="trad-textarea" id="trad-input" placeholder="Digite o texto..."></textarea>
+    </div>
+    <div class="trad-mid">
+      <button class="trad-btn" onclick="traduzir()">Traduzir →</button>
+    </div>
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:.68rem;font-weight:700;opacity:.5;text-transform:uppercase" id="trad-to-label">Italiano</span>
+        <button class="trad-speak-btn" onclick="falarTexto('trad-result', tradLangTo)" title="Ouvir tradução">🔊</button>
+      </div>
+      <div class="trad-result" id="trad-result">A tradução aparecerá aqui...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LINKS RÁPIDOS ═══════════════════════════════════ -->
+<div class="sec-label">Links Rápidos</div>
+<div class="block">
+  <div class="block-title">🔗 Acesso Rápido</div>
+  <div class="links-flex" id="links-grid"></div>
+  <div class="add-link-row">
+    <input class="input-std" id="link-icone" type="text" placeholder="🔗" style="width:52px">
+    <input class="input-std" id="link-nome" type="text" placeholder="Nome" style="flex:1;min-width:80px">
+    <input class="input-std" id="link-url" type="text" placeholder="https://..." style="flex:2;min-width:130px">
+    <button class="add-btn" onclick="addLink()">+ Adicionar</button>
+  </div>
+</div>
+
+<!-- ══ SENHAS ════════════════════════════════════════════ -->
+<div class="sec-label">Senhas & Acessos</div>
+<div class="block" id="senhas-block">
+  <div class="block-title">🔐 Gerenciador de Senhas
+    <span style="font-size:.68rem;font-weight:400;opacity:.5;margin-left:6px;">Protegido por código secreto</span>
+  </div>
+  <!-- TELA BLOQUEADA -->
+  <div id="senhas-locked">
+    <div style="text-align:center;padding:14px 0;">
+      <div style="font-size:2.5rem;margin-bottom:8px;">🔒</div>
+      <div style="font-size:.82rem;opacity:.6;margin-bottom:14px;">Digite o código secreto para visualizar as senhas</div>
+      <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;">
+        <input class="input-std" id="pin-input" type="password" placeholder="Código secreto" style="width:180px;text-align:center;letter-spacing:.2em;" onkeydown="if(event.key==='Enter')verificarPin()">
+        <button class="add-btn" onclick="verificarPin()">🔓 Acessar</button>
+      </div>
+      <div id="pin-erro" style="color:#dc2626;font-size:.75rem;margin-top:8px;display:none;">Código incorreto.</div>
+      <div style="margin-top:14px;font-size:.68rem;opacity:.35;">
+        Para definir ou alterar o código, use o botão abaixo após acessar.
+      </div>
+    </div>
+  </div>
+  <!-- TELA DESBLOQUEADA -->
+  <div id="senhas-unlocked" style="display:none;">
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
+      <button class="add-btn sec" style="font-size:.72rem;" onclick="alterarPin()">🔑 Alterar código</button>
+      <button class="add-btn sec" style="font-size:.72rem;" onclick="bloquearSenhas()">🔒 Bloquear</button>
+      <input class="input-std" id="senhas-busca" type="text" placeholder="🔍 Buscar serviço..." style="flex:1;min-width:140px;font-size:.75rem;" oninput="renderSenhas()">
+    </div>
+    <div id="senhas-lista" style="margin-bottom:14px;"></div>
+    <!-- Formulário -->
+    <div style="padding-top:10px;border-top:2px solid var(--bg);">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+        <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:110px;">
+          <span style="font-size:.68rem;font-weight:700;opacity:.5;text-transform:uppercase">Serviço</span>
+          <input class="input-std" id="sv-servico" type="text" placeholder="ex: Gmail, Netflix...">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:110px;">
+          <span style="font-size:.68rem;font-weight:700;opacity:.5;text-transform:uppercase">Usuário / E-mail</span>
+          <input class="input-std" id="sv-usuario" type="text" placeholder="usuário ou e-mail">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:110px;">
+          <span style="font-size:.68rem;font-weight:700;opacity:.5;text-transform:uppercase">Senha</span>
+          <input class="input-std" id="sv-senha" type="text" placeholder="senha">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:80px;">
+          <span style="font-size:.68rem;font-weight:700;opacity:.5;text-transform:uppercase">Categoria</span>
+          <select class="sel-std" id="sv-cat">
+            <option>E-mail</option><option>Banco</option><option>Streaming</option>
+            <option>Trabalho</option><option>Redes sociais</option><option>Outros</option>
+          </select>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:110px;">
+          <span style="font-size:.68rem;font-weight:700;opacity:.5;text-transform:uppercase">Obs.</span>
+          <input class="input-std" id="sv-obs" type="text" placeholder="URL, notas...">
+        </div>
+        <button class="add-btn" onclick="addSenha()">+ Adicionar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BACKUP ══════════════════════════════════════════ -->
+<div class="sec-label">Segurança dos Dados</div>
+<div class="block">
+  <div class="backup-row">
+    <div class="backup-info">Exporte regularmente para não perder seus dados. O arquivo .json pode ser importado em qualquer computador.</div>
+    <button class="add-btn" onclick="exportarDados()">⬇️ Exportar Backup</button>
+    <button class="add-btn verde" onclick="importarDados()">⬆️ Importar Backup</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════ SCRIPTS ══════════════════════════ -->
+<script>
+'use strict';
+
+// ── DADOS MESTRES ─────────────────────────────────────
+const CORES = {
+  Devocional:'#5B9BD5', Pessoal:'#3aaa6f', Familiar:'#f97316',
+  Financeiro:'#ca8a04', Profissional:'#3b9eff', Ministerial:'#9333ea',
+  Social:'#0891b2', Geral:'#64748b'
+};
+
+const FUSOS = [
+  { id:'italia',   flag:'🇮🇹', code:'it', city:'Legnano',   tz:'Europe/Rome',          lat:45.5956, lon:8.9148  },
+  { id:'emirados', flag:'🇦🇪', code:'ae', city:'Dubai',     tz:'Asia/Dubai',           lat:25.2048, lon:55.2708 },
+  { id:'brasil',   flag:'🇧🇷', code:'br', city:'São Paulo', tz:'America/Sao_Paulo',    lat:-23.5505,lon:-46.6333 },
+];
+
+const PERIODOS = [
+  { inicio:'2026-01-01', fim:'2026-07-12', local:'italia',   cor:'#dbeafe', borda:'#93c5fd', flag:'🇮🇹' },
+  { inicio:'2026-07-13', fim:'2026-10-01', local:'emirados', cor:'#fee2e2', borda:'#fca5a5', flag:'🇦🇪' },
+  { inicio:'2026-10-02', fim:'2027-02-10', local:'brasil',   cor:'#dcfce7', borda:'#86efac', flag:'🇧🇷' },
+];
+const DIAS_VIAGEM = new Set(['2026-07-13','2026-10-02']);
+
+// Feriados: { 'YYYY-MM-DD': [{nome, pais}] }
+const FERIADOS = {};
+function fAdd(d, nome, pais) { if(!FERIADOS[d]) FERIADOS[d]=[]; FERIADOS[d].push({nome,pais}); }
+
+// BRASIL 🇧🇷
+fAdd('2026-01-01','Confraternização Universal','brasil');
+fAdd('2026-01-25','Aniversário de São Paulo','brasil');
+fAdd('2026-04-03','Sexta-feira Santa','brasil');
+fAdd('2026-04-05','Páscoa','brasil');
+fAdd('2026-04-21','Tiradentes','brasil');
+fAdd('2026-05-01','Dia do Trabalho','brasil');
+fAdd('2026-07-09','Revolução Constitucionalista (SP)','brasil');
+fAdd('2026-09-07','Independência do Brasil','brasil');
+fAdd('2026-10-12','Nossa Senhora Aparecida','brasil');
+fAdd('2026-11-02','Finados','brasil');
+fAdd('2026-11-15','Proclamação da República','brasil');
+fAdd('2026-11-20','Consciência Negra','brasil');
+fAdd('2026-12-25','Natal','brasil');
+fAdd('2027-01-01','Confraternização Universal','brasil');
+fAdd('2027-01-25','Aniversário de São Paulo','brasil');
+fAdd('2027-02-01','Carnaval (SP, Facultativo)','brasil');
+fAdd('2027-02-02','Carnaval','brasil');
+
+// ITÁLIA 🇮🇹
+fAdd('2026-01-01','Capodanno','italia');
+fAdd('2026-01-06','Epifania','italia');
+fAdd('2026-04-05','Pasqua','italia');
+fAdd('2026-04-06','Lunedì dell\'Angelo','italia');
+fAdd('2026-04-25','Festa della Liberazione','italia');
+fAdd('2026-05-01','Festa del Lavoro','italia');
+fAdd('2026-05-29','Palio di Legnano','italia');
+fAdd('2026-06-02','Festa della Repubblica','italia');
+fAdd('2026-08-15','Ferragosto','italia');
+fAdd('2026-11-01','Ognissanti','italia');
+fAdd('2026-12-08','Immacolata Concezione','italia');
+fAdd('2026-12-25','Natale','italia');
+fAdd('2026-12-26','Santo Stefano','italia');
+
+// EMIRADOS ÁRABES 🇦🇪
+fAdd('2026-01-01','Ano Novo','emirados');
+fAdd('2026-07-08','Ano Novo Islâmico – 1448H (aprox.)','emirados');
+fAdd('2026-09-04','Aniversário do Profeta (aprox.)','emirados');
+fAdd('2026-12-02','Dia Nacional dos EAU','emirados');
+fAdd('2026-12-03','Dia Nacional dos EAU','emirados');
+
+// Aniversários da família
+const ANIVERSARIOS = [
+  {nome:'Celso',   mes:5, dia:16},{nome:'Rafael',  mes:5, dia:30},
+  {nome:'Rodrigo', mes:5, dia:18},{nome:'Adriana', mes:5, dia:18},
+  {nome:'Selma',   mes:0, dia:1 }, // data a confirmar
+  {nome:'Matheus', mes:4, dia:21},{nome:'Laura',   mes:7, dia:22},
+  {nome:'Giulia',  mes:12,dia:18},{nome:'Maitê',   mes:8, dia:5 },
+  {nome:'Arthur',  mes:8, dia:3 },
+];
+// Ano de nascimento para cálculo de idade
+const ANIVERSARIOS_NASC = {
+  Celso:1963, Rafael:1990, Rodrigo:1994, Adriana:1994,
+  Matheus:2016, Laura:2019, Giulia:2021, Maitê:2024, Arthur:2025,
+};
+
+// ── ESTADO ────────────────────────────────────────────
+let fusoAtivo = localStorage.getItem('fuso_ativo') || 'italia';
+let calAno = new Date().getFullYear(), calMes = new Date().getMonth();
+let tradLangFrom = 'pt', tradLangTo = 'it';
+
+// ── DATA DE HOJE ──────────────────────────────────────
+const hoje = new Date();
+const dtStr = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const hojeStr = dtStr(hoje);
+document.getElementById('datahoje').textContent =
+  hoje.toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+// ── FOTO DE PERFIL ────────────────────────────────────
+function loadFoto(input) {
+  const file = input.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = e => { localStorage.setItem('foto_perfil', e.target.result); renderFoto(); };
+  r.readAsDataURL(file);
+}
+function renderFoto() {
+  const src = localStorage.getItem('foto_perfil');
+  const img = document.getElementById('avatar-img');
+  const ini = document.getElementById('avatar-ini');
+  if(src){ img.src=src; img.style.display='block'; ini.style.display='none'; }
+  else { img.style.display='none'; ini.style.display='block'; }
+}
+renderFoto();
+
+// ── RELÓGIOS ──────────────────────────────────────────
+function renderClocks() {
+  const wrap = document.getElementById('clocks-wrap');
+  wrap.innerHTML = '';
+  FUSOS.forEach(f => {
+    const isPrimary = f.id === fusoAtivo;
+    const card = document.createElement('div');
+    card.className = `clock-card ${isPrimary?'primary '+f.id:''}`;
+    card.id = 'clock-'+f.id;
+    card.title = isPrimary ? 'Fuso principal — clique para trocar' : 'Clique para definir como fuso principal';
+    card.onclick = () => { fusoAtivo=f.id; localStorage.setItem('fuso_ativo',f.id); renderClocks(); renderAgenda(); renderCal(); };
+    card.innerHTML = `
+      <div class="clock-inner">
+        <div class="clock-flag"><img src="https://flagcdn.com/w80/${f.code}.png" alt="${f.flag}" title="${f.city}"></div>
+        <div class="clock-left">
+          <div class="clock-city">${f.city}</div>
+          <div class="clock-time" id="ct-${f.id}">--:--:--</div>
+          <div class="clock-date" id="cd-${f.id}"></div>
+        </div>
+        <div class="clock-right">
+          <div class="clock-temp" id="temp-${f.id}">--°</div>
+          <div class="clock-temp-lbl">°C</div>
+        </div>
+      </div>
+      ${isPrimary?'<div class="primary-hint">⭐ fuso principal</div>':''}`;
+    wrap.appendChild(card);
+  });
+  // re-fetch temperatures into new elements
+  FUSOS.forEach(fetchTemp);
+}
+function atualizaRelogio() {
+  FUSOS.forEach(f => {
+    const el = document.getElementById('ct-'+f.id);
+    const de = document.getElementById('cd-'+f.id);
+    if(!el) return;
+    const now = new Date();
+    el.textContent = now.toLocaleTimeString('pt-BR',{timeZone:f.tz,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    de.textContent = now.toLocaleDateString('pt-BR',{timeZone:f.tz,day:'2-digit',month:'2-digit'});
+  });
+}
+renderClocks();
+setInterval(atualizaRelogio,1000);
+atualizaRelogio();
+
+// ── ALERTA DE VIAGEM ──────────────────────────────────
+function proximaViagem() {
+  const viagens = [
+    { data:'2026-07-13', de:'Itália 🇮🇹', para:'Emirados 🇦🇪' },
+    { data:'2026-10-02', de:'Emirados 🇦🇪', para:'Brasil 🇧🇷' },
+    { data:'2027-02-10', de:'Brasil 🇧🇷', para:'(próximo destino)' },
+  ];
+  const banner = document.getElementById('viagem-banner');
+  for(const v of viagens){
+    const d = new Date(v.data+'T12:00:00');
+    const diff = Math.round((d-hoje)/86400000);
+    if(diff >= 0 && diff <= 30){
+      banner.style.display='flex';
+      banner.innerHTML = `✈️ <strong>Viagem em ${diff===0?'HOJE!':''+diff+' dia'+(diff>1?'s':'')}</strong> &nbsp;|&nbsp; ${v.de} → ${v.para} &nbsp;|&nbsp; ${d.toLocaleDateString('pt-BR')}`;
+      return;
+    }
+  }
+}
+proximaViagem();
+
+// ── LEMBRETES DO DIA ─────────────────────────────────
+(function(){
+  const anivHoje = ANIVERSARIOS.filter(a =>
+    a.mes - 1 === hoje.getMonth() && a.dia === hoje.getDate()
+  );
+  // Lembretes manuais salvos (para datas futuras adicionadas pelo usuário)
+  const lembretesSalvos = JSON.parse(localStorage.getItem('lembretes_dia') || '[]')
+    .filter(l => l.data === hojeStr);
+
+  const itens = [
+    ...anivHoje.map(a => {
+      const nascimento = ANIVERSARIOS_NASC[a.nome];
+      const idade = nascimento ? hoje.getFullYear() - nascimento : null;
+      return `🎂 Aniversário de <strong>${a.nome}</strong>${idade ? ' — ' + idade + ' anos' : ''}`;
+    }),
+    ...lembretesSalvos.map(l => `🔔 ${l.texto}`),
+  ];
+
+  const div = document.getElementById('lembretes-div');
+  if(itens.length){
+    div.innerHTML = `<div class="aniv-alert" style="background:#fff0f6;border-color:#ec4899;color:#831843;max-width:1200px;margin:0 auto 12px">
+      🎉 <strong>Hoje:</strong> ${itens.join(' &nbsp;|&nbsp; ')}
+    </div>`;
+  }
+})();
+
+// ── TEMPERATURA ───────────────────────────────────────
+async function fetchTemp(f){
+  const el = document.getElementById('temp-'+f.id);
+  if(!el) return;
+  try{
+    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${f.lat}&longitude=${f.lon}&current=temperature_2m`);
+    const d = await r.json();
+    el.textContent = Math.round(d.current.temperature_2m)+'°';
+  }catch{ el.textContent='--°'; }
+}
+setInterval(()=>FUSOS.forEach(fetchTemp), 600000);
+
+// ── PALAVRA DO DIA ────────────────────────────────────
+function renderPalavra(){
+  const txt=localStorage.getItem('palavra_txt')||'';
+  const ref=localStorage.getItem('palavra_ref')||'';
+  document.getElementById('palavra-txt').value=txt;
+  document.getElementById('palavra-ref').value=ref;
+  if(txt){
+    document.getElementById('palavra-display-txt').textContent=txt;
+    document.getElementById('palavra-display-ref').textContent=ref;
+    document.getElementById('palavra-display').style.display='block';
+    document.getElementById('palavra-form').style.display='none';
+  } else {
+    document.getElementById('palavra-display').style.display='none';
+    document.getElementById('palavra-form').style.display='block';
+  }
+}
+function salvarPalavra(){
+  localStorage.setItem('palavra_txt',document.getElementById('palavra-txt').value);
+  localStorage.setItem('palavra_ref',document.getElementById('palavra-ref').value);
+  renderPalavra();
+}
+function editarPalavra(){
+  document.getElementById('palavra-display').style.display='none';
+  document.getElementById('palavra-form').style.display='block';
+  document.getElementById('btn-cancelar-palavra').style.display='inline-flex';
+}
+function cancelarEditarPalavra(){
+  renderPalavra();
+  document.getElementById('btn-cancelar-palavra').style.display='none';
+}
+renderPalavra();
+
+// ── 7 ÁREAS ───────────────────────────────────────────
+const AREAS = [
+  {num:1,icon:'🙏',title:'Devocional',         bg:'#5B9BD5',arq:'DASHBOARD_DEVOCIONAL.html',key:'nota_devocional'},
+  {num:2,icon:'👤',title:'Pessoal',            bg:'#3aaa6f',arq:'DASHBOARD_PESSOAL.html',   key:'nota_pessoal'},
+  {num:3,icon:'👨‍👩‍👧',title:'Familiar',          bg:'#f97316',arq:'DASHBOARD_FAMILIAR.html',  key:'nota_familiar'},
+  {num:4,icon:'💰',title:'Financeiro',         bg:'#ca8a04',arq:'DASHBOARD_FINANCEIRO.html', key:'nota_financeiro'},
+  {num:5,icon:'🏢',title:'Profissional',       bg:'#3b9eff',arq:'DASHBOARD_PROFISSIONAL.html',key:'nota_profissional'},
+  {num:6,icon:'⛪',title:'Ministerial',        bg:'#9333ea',arq:'DASHBOARD_MINISTERIAL.html',key:'nota_ministerial'},
+  {num:7,icon:'🌐',title:'Social',             bg:'#0891b2',arq:'DASHBOARD_SOCIAL.html',    key:'nota_social'},
+];
+const STATUS_OPTS=['verde','amarelo','vermelho'];
+(function renderAreas(){
+  const row=document.getElementById('areas-row');
+  row.innerHTML='';
+  AREAS.forEach(a=>{
+    const tc=a.bg==='#ca8a04'?'#fff8e1':'#fff';
+    const saved=localStorage.getItem('st_'+a.key)||'verde';
+    const card=document.createElement('div');
+    card.className='area-card';
+    card.style.background=a.bg;
+    card.style.color=tc;
+    card.innerHTML=`
+      <div class="area-icon-big">${a.icon}</div>
+      <div class="area-title-sm">${a.title}</div>
+      <div class="area-num-sm">Área ${a.num}</div>
+      <div class="area-status-dots">
+        ${STATUS_OPTS.map(s=>`<div class="sdot sdot-${s}${saved===s?' active':''}" id="sd_${a.key}_${s}" onclick="setAreaStatus('${a.key}','${s}')" title="${s==='verde'?'Em dia':s==='amarelo'?'Atenção':'Atrasado'}"></div>`).join('')}
+      </div>
+      <button class="area-dash-sm" style="color:${tc}" onclick="abrirDash('${a.arq}')">📊 Ver Dashboard</button>
+    `;
+    row.appendChild(card);
+  });
+})();
+function setAreaStatus(key,st){
+  localStorage.setItem('st_'+key,st);
+  STATUS_OPTS.forEach(s=>{
+    const d=document.getElementById(`sd_${key}_${s}`);
+    if(d){ d.classList.remove('active'); if(s===st)d.classList.add('active'); }
+  });
+}
+function abrirDash(arq){
+  window.open(arq,'_blank');
+}
+
+// ── PIPELINE / KANBAN ─────────────────────────────────
+const PIPE_STATUS=[
+  {id:'pendente',  label:'⏳ Pendente',  cls:'pendente'},
+  {id:'andamento', label:'🔄 Em Andamento',cls:'andamento'},
+  {id:'aguardando',label:'⏸ Aguardando', cls:'aguardando'},
+  {id:'concluido', label:'✅ Concluído',  cls:'concluido'},
+  {id:'cancelado', label:'❌ Cancelado',  cls:'cancelado'},
+];
+let pipeItems = JSON.parse(localStorage.getItem('pipe_items')||'[]');
+function savePipe(){localStorage.setItem('pipe_items',JSON.stringify(pipeItems));}
+function renderPipe(){
+  const grid=document.getElementById('pipe-grid');
+  grid.innerHTML='';
+  PIPE_STATUS.forEach(col=>{
+    const colDiv=document.createElement('div');
+    colDiv.className='pipe-col';
+    const items=pipeItems.filter(t=>t.status===col.id);
+    colDiv.innerHTML=`<div class="pipe-col-title ${col.cls}">${col.label} (${items.length})</div>`;
+    items.forEach((t,_)=>{
+      const idx=pipeItems.indexOf(t);
+      const bg=CORES[t.area]||'#64748b';
+      const card=document.createElement('div');
+      card.className='pipe-card';
+      card.style.background=bg;
+      const allIds=PIPE_STATUS.map(s=>s.id);
+      const ci=allIds.indexOf(col.id);
+      const canPrev=ci>0, canNext=ci<allIds.length-1;
+      card.innerHTML=`
+        <div class="pipe-card-title">${t.texto}</div>
+        <div class="pipe-card-area">${t.area}</div>
+        <div class="pipe-card-btns">
+          ${canPrev?`<button class="pipe-mv" onclick="movePipe(${idx},-1)">◀</button>`:''}
+          ${canNext?`<button class="pipe-mv" onclick="movePipe(${idx},1)">▶</button>`:''}
+          <button class="pipe-del" onclick="delPipe(${idx})">✕</button>
+        </div>`;
+      colDiv.appendChild(card);
+    });
+    grid.appendChild(colDiv);
+  });
+}
+function addPipe(){
+  const txt=document.getElementById('pipe-txt').value.trim();
+  if(!txt)return;
+  pipeItems.unshift({texto:txt,area:document.getElementById('pipe-area').value,status:'pendente'});
+  savePipe();renderPipe();document.getElementById('pipe-txt').value='';
+}
+function movePipe(idx,dir){
+  const allIds=PIPE_STATUS.map(s=>s.id);
+  const ci=allIds.indexOf(pipeItems[idx].status);
+  const ni=ci+dir;
+  if(ni>=0&&ni<allIds.length){pipeItems[idx].status=allIds[ni];savePipe();renderPipe();}
+}
+function delPipe(idx){pipeItems.splice(idx,1);savePipe();renderPipe();}
+renderPipe();
+
+// ── AGENDA ────────────────────────────────────────────
+let agItems=JSON.parse(localStorage.getItem('agenda_items')||'[]');
+let agFiltro={tipo:'hoje', de:null, ate:null}; // filtro ativo
+function saveAg(){localStorage.setItem('agenda_items',JSON.stringify(agItems));}
+
+function renderAgenda(){
+  const ul=document.getElementById('agenda-list');
+  const fuso=FUSOS.find(f=>f.id===fusoAtivo);
+  document.getElementById('fuso-agenda').innerHTML=`${fuso.flag} ${fuso.city}`;
+
+  const sorted=[...agItems].sort((a,b)=>a.data.localeCompare(b.data)||(a.hora||'').localeCompare(b.hora||''));
+
+  let filtrados=sorted;
+  let label='';
+  if(agFiltro.tipo==='hoje'){
+    filtrados=sorted.filter(a=>a.data===hojeStr);
+    label='— Hoje';
+  } else if(agFiltro.tipo==='semana'){
+    const fim=new Date(hoje); fim.setDate(fim.getDate()+6);
+    const fimStr=dtStr(fim);
+    filtrados=sorted.filter(a=>a.data>=hojeStr&&a.data<=fimStr);
+    label='— Esta semana';
+  } else if(agFiltro.tipo==='mes'){
+    const mesStr=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
+    filtrados=sorted.filter(a=>a.data.startsWith(mesStr));
+    label='— Este mês';
+  } else if(agFiltro.tipo==='dia' && agFiltro.de){
+    filtrados=sorted.filter(a=>a.data===agFiltro.de);
+    const d=new Date(agFiltro.de+'T12:00:00');
+    label=`— ${d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'})}`;
+  } else if(agFiltro.tipo==='periodo' && agFiltro.de && agFiltro.ate){
+    filtrados=sorted.filter(a=>a.data>=agFiltro.de&&a.data<=agFiltro.ate);
+    label=`— ${agFiltro.de.split('-').reverse().join('/')} a ${agFiltro.ate.split('-').reverse().join('/')}`;
+  } else {
+    // todos
+    label='— Todos';
+  }
+
+  document.getElementById('ag-filtro-label').textContent=label;
+
+  if(!filtrados.length){
+    ul.innerHTML='<li class="empty-msg">Nenhum compromisso neste período.</li>';
+    return;
+  }
+  ul.innerHTML='';
+  filtrados.forEach(a=>{
+    const d=new Date(a.data+'T12:00:00');
+    const dStr2=d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',weekday:'short'});
+    const cor=CORES[a.area]||'#64748b';
+    const idx=agItems.indexOf(a);
+    const cruzaMeiaNoite=a.hora_fim&&a.hora_fim<=a.hora;
+    const horarioTxt=a.hora?(a.hora_fim?`${a.hora} – ${a.hora_fim}${cruzaMeiaNoite?'+1':''}`:a.hora):'';
+    const li=document.createElement('li');
+    li.className='agenda-item';
+    li.style.background=cor;
+    li.innerHTML=`<span class="agenda-data">${dStr2}</span><span class="agenda-hora" style="min-width:110px">${horarioTxt}</span><span class="agenda-txt">${a.texto}</span>${a.nota?`<span style="font-size:.68rem;opacity:.7">${a.nota}</span>`:''}<span class="agenda-area">${a.area}</span><button class="agenda-del" onclick="delAg(${idx})">✕</button>`;
+    ul.appendChild(li);
+  });
+}
+
+function setFiltroBtn(id){
+  ['ag-f-hoje','ag-f-semana','ag-f-mes','ag-f-todos'].forEach(b=>{
+    const el=document.getElementById(b);
+    if(el)el.classList.remove('active');
+  });
+  const btn=document.getElementById(id);
+  if(btn)btn.classList.add('active');
+}
+function filtrarAgendaDia(ds){
+  if(ds==='hoje') ds=hojeStr;
+  agFiltro={tipo:'dia',de:ds,ate:null};
+  setFiltroBtn(null);
+  renderAgenda();
+  document.getElementById('agenda-list').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function filtrarAgendaSemana(){agFiltro={tipo:'semana'};setFiltroBtn('ag-f-semana');renderAgenda();}
+function filtrarAgendaMes(){agFiltro={tipo:'mes'};setFiltroBtn('ag-f-mes');renderAgenda();}
+function filtrarAgendaTodos(){agFiltro={tipo:'todos'};setFiltroBtn('ag-f-todos');renderAgenda();}
+function filtrarAgendaPeriodo(){
+  const de=document.getElementById('ag-f-de').value;
+  const ate=document.getElementById('ag-f-ate').value;
+  if(!de&&!ate)return;
+  agFiltro={tipo:'periodo',de:de||hojeStr,ate:ate||(de||hojeStr)};
+  setFiltroBtn(null);
+  renderAgenda();
+}
+function limparFiltroAg(){
+  agFiltro={tipo:'hoje'};
+  setFiltroBtn('ag-f-hoje');
+  document.getElementById('ag-f-de').value='';
+  document.getElementById('ag-f-ate').value='';
+  renderAgenda();
+}
+
+function addAgenda(){
+  const txt=document.getElementById('ag-txt').value.trim();
+  const data=document.getElementById('ag-data').value;
+  if(!txt||!data)return;
+  agItems.push({
+    texto:txt, data,
+    hora:document.getElementById('ag-hora').value,
+    hora_fim:document.getElementById('ag-hora-fim').value,
+    nota:document.getElementById('ag-nota').value,
+    area:document.getElementById('ag-area').value
+  });
+  saveAg();renderAgenda();renderCal();renderFichaDia();
+  document.getElementById('ag-txt').value='';
+  document.getElementById('ag-data').value='';
+  document.getElementById('ag-nota').value='';
+}
+function delAg(idx){agItems.splice(idx,1);saveAg();renderAgenda();renderCal();renderFichaDia();}
+
+// ── COPA DO MUNDO 2026 ────────────────────────────────
+// Tempos em horário de Brasília (UTC-3)
+// Grupo: início -30min / fim +30min após 90min
+// Eliminatórias: +30min antes, +30min após ET+pen (~150min total)
+// COPA 2026 — Horários em TEMPO LOCAL (CEST=UTC+2 até 12/jul, AST=UTC+4 a partir de 13/jul)
+// BRT→CEST: +5h | BRT→AST: +7h
+const COPA_2026=[
+  // Abertura: ~19h CDT local México = 02h00 CEST 12/jun (estimado)
+  {id:'copa_ab', texto:'⚽ Abertura Copa 2026 — México × África do Sul',
+   data:'2026-06-12', hora:'01:30', hora_fim:'04:30', area:'Lazer',
+   nota:'Jogo inaugural • Estádio Azteca, Cidade do México • Horário local Legnano (CEST)'},
+
+  // Brasil × Marrocos: 19h BRT = 00h00 CEST 14/jun — começa na noite do dia 13
+  {id:'copa_b1', texto:'🇧🇷 Brasil × Marrocos — Copa 2026 (1º jogo)',
+   data:'2026-06-13', hora:'23:30', hora_fim:'02:30', area:'Lazer',
+   nota:'Fase de Grupos • MetLife Stadium, NJ • Horário local Legnano (CEST)'},
+
+  // Brasil × Haiti: 21h30 BRT = 02h30 CEST 20/jun
+  {id:'copa_b2', texto:'🇧🇷 Brasil × Haiti — Copa 2026 (2º jogo)',
+   data:'2026-06-20', hora:'02:00', hora_fim:'05:00', area:'Lazer',
+   nota:'Fase de Grupos • Lincoln Financial Field, Filadélfia • Horário local Legnano (CEST)'},
+
+  // Brasil × Escócia: 19h BRT = 00h00 CEST 25/jun — começa na noite do dia 24
+  {id:'copa_b3', texto:'🇧🇷 Brasil × Escócia — Copa 2026 (3º jogo)',
+   data:'2026-06-24', hora:'23:30', hora_fim:'02:30', area:'Lazer',
+   nota:'Fase de Grupos • Horário local Legnano (CEST)'},
+
+  // Oitavas 29/jun — estimado ~20h BRT = 01h00 CEST 30/jun
+  {id:'copa_o1', texto:'🇧🇷 Brasil — Oitavas Copa 2026 (se 1º Grupo C)',
+   data:'2026-06-30', hora:'00:30', hora_fim:'05:00', area:'Lazer',
+   nota:'Oitavas • Houston, EUA • +prorrogação/pênaltis • Horário local Legnano (CEST)'},
+  {id:'copa_o2', texto:'🇧🇷 Brasil — Oitavas Copa 2026 (se 2º Grupo C)',
+   data:'2026-06-30', hora:'00:30', hora_fim:'05:00', area:'Lazer',
+   nota:'Oitavas • Monterrey, México • +prorrogação/pênaltis • Horário local Legnano (CEST)'},
+
+  // Quartas 04/jul — estimado ~20h BRT = 01h00 CEST 05/jul (ainda Itália)
+  {id:'copa_q1', texto:'🇧🇷 Brasil — Quartas Copa 2026 (possível)',
+   data:'2026-07-05', hora:'00:30', hora_fim:'05:30', area:'Lazer',
+   nota:'Quartas • Filadélfia, EUA • +prorrogação/pênaltis • Horário local Legnano (CEST)'},
+
+  // Quartas 09/jul — estimado ~20h BRT = 01h00 CEST 10/jul (ainda Itália)
+  {id:'copa_q2', texto:'🇧🇷 Brasil — Quartas Copa 2026 (possível alt.)',
+   data:'2026-07-10', hora:'00:30', hora_fim:'05:30', area:'Lazer',
+   nota:'Quartas • Boston, EUA • +prorrogação/pênaltis • Horário local Legnano (CEST)'},
+
+  // Semis 14-15/jul — já em DUBAI (AST=UTC+4): estimado ~21h BRT = 04h00 AST 15-16/jul
+  {id:'copa_s1', texto:'⚽ Copa 2026 — Semifinal 1 (🇧🇷 possível)',
+   data:'2026-07-15', hora:'03:30', hora_fim:'08:00', area:'Lazer',
+   nota:'Semifinal • +prorrogação/pênaltis • Horário local Dubai (AST)'},
+  {id:'copa_s2', texto:'⚽ Copa 2026 — Semifinal 2 (🇧🇷 possível)',
+   data:'2026-07-16', hora:'03:30', hora_fim:'08:00', area:'Lazer',
+   nota:'Semifinal • +prorrogação/pênaltis • Horário local Dubai (AST)'},
+
+  // Final 19/jul — Dubai (AST): 16h BRT = 23h AST 19/jul
+  {id:'copa_f', texto:'🏆 Copa do Mundo 2026 — FINAL (🇧🇷 possível)',
+   data:'2026-07-19', hora:'22:30', hora_fim:'03:00', area:'Lazer',
+   nota:'FINAL • MetLife Stadium, Nova Jersey • +prorrogação/pênaltis • Horário local Dubai (AST)'},
+];
+(function seedCopa(){
+  if(localStorage.getItem('copa_2026_v2')) return;
+  // Remove eventos Copa antigos (versão BRT)
+  agItems = agItems.filter(a => !(a.id && a.id.startsWith('copa_')));
+  // Adiciona com horários locais corretos
+  COPA_2026.forEach(e => agItems.push(e));
+  saveAg();
+  localStorage.setItem('copa_2026_v2','1');
+})();
+
+// ── FICHA DO DIA ─────────────────────────────────────
+document.getElementById('ficha-data').value=hojeStr;
+function renderFichaDia(){
+  const ds=document.getElementById('ficha-data').value||hojeStr;
+  const d=new Date(ds+'T12:00:00');
+  document.getElementById('ficha-dia-label').textContent=
+    d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+
+  // Versículo
+  const vtxt=localStorage.getItem('palavra_txt')||'';
+  const vref=localStorage.getItem('palavra_ref')||'';
+  if(vtxt){
+    document.getElementById('ficha-versic-txt').textContent=vtxt;
+    document.getElementById('ficha-versic-ref').textContent=vref;
+    document.getElementById('ficha-versiculo').style.display='block';
+  }
+
+  // Compromissos do dia ordenados por hora
+  const comps=[...agItems].filter(a=>a.data===ds).sort((a,b)=>(a.hora||'').localeCompare(b.hora||''));
+  const cEl=document.getElementById('ficha-compromissos');
+  if(!comps.length){
+    cEl.innerHTML='<div style="font-size:.78rem;color:#aaa;font-style:italic;padding:4px 0">Nenhum compromisso agendado.</div>';
+  } else {
+    const CORES_F={Devocional:'#5B9BD5',Pessoal:'#3aaa6f',Familiar:'#f97316',Financeiro:'#ca8a04',Profissional:'#3b9eff',Ministerial:'#9333ea',Social:'#0891b2',Lazer:'#f59e0b',Geral:'#64748b'};
+    cEl.innerHTML=comps.map(a=>{
+      const cruzaMeiaNoite=a.hora_fim&&a.hora_fim<=a.hora;
+      const horario=a.hora?(a.hora_fim?`${a.hora} → ${a.hora_fim}${cruzaMeiaNoite?' (+1d)':''}`:a.hora):'Sem hora';
+      const cor=CORES_F[a.area]||'#64748b';
+      const isCopa=a.id&&a.id.startsWith('copa_');
+      return `<div class="ficha-comp ${isCopa?'copa':''}" style="border-left-color:${cor}">
+        <span class="fc-hora">${horario}</span>
+        <span class="fc-txt">${a.texto}</span>
+        ${a.nota?`<span class="fc-area">📍 ${a.nota}</span>`:''}
+        <span class="fc-area" style="background:${cor}20;color:${cor};padding:2px 8px;border-radius:20px;font-weight:700;">${a.area}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Tarefas (todas pendentes + em andamento)
+  const tarefas=[...pipeItems].filter(t=>t.status==='pendente'||t.status==='andamento').sort((a,b)=>(a.area||'').localeCompare(b.area||''));
+  const tEl=document.getElementById('ficha-tarefas');
+  if(!tarefas.length){
+    tEl.innerHTML='<div style="font-size:.78rem;color:#aaa;font-style:italic;padding:4px 0">Nenhuma tarefa pendente.</div>';
+  } else {
+    const CORES_T={Devocional:'#5B9BD5',Pessoal:'#3aaa6f',Familiar:'#f97316',Financeiro:'#ca8a04',Profissional:'#3b9eff',Ministerial:'#9333ea',Social:'#0891b2',Geral:'#64748b'};
+    tEl.innerHTML=tarefas.map((t,i)=>{
+      const cor=CORES_T[t.area]||'#64748b';
+      const idx=pipeItems.indexOf(t);
+      return `<div class="ficha-task">
+        <input type="checkbox" ${t.status==='concluido'?'checked':''} onchange="concluirTarefaFicha(${idx})">
+        <span style="flex:1">${t.texto}</span>
+        <span style="font-size:.68rem;font-weight:700;color:${cor};background:${cor}18;padding:2px 8px;border-radius:20px;">${t.area}</span>
+        <span class="fc-status fc-s-${t.status}">${t.status}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Notas salvas
+  const notaKey='ficha_nota_'+ds;
+  document.getElementById('ficha-notas').value=localStorage.getItem(notaKey)||'';
+  document.getElementById('ficha-notas').onchange=()=>localStorage.setItem(notaKey,document.getElementById('ficha-notas').value);
+
+  // ── Devocional do Dia ──────────────────────────────────────────────────
+  let devShown=false;
+
+  // 1. Leitura bíblica — lê dev_planos (nova estrutura)
+  try {
+    const planos=JSON.parse(localStorage.getItem('dev_planos')||'[]');
+    const leituraHoje=[];
+    for(const p of planos){
+      for(const it of (p.passagens||[])){
+        if(it.data===ds) leituraHoje.push({passagem:it.passagem,plano:p.nome,status:it.status});
+      }
+    }
+    if(leituraHoje.length){
+      document.getElementById('ficha-leitura-div').style.display='block';
+      document.getElementById('ficha-leitura').innerHTML=leituraHoje.map(function(it){
+        const concl=it.status==='concluido';
+        return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #dbeafe;font-size:.8rem;">'
+          +'<span style="font-size:.65rem;color:#3b82f6;background:#dbeafe;padding:1px 7px;border-radius:4px;white-space:nowrap;">'+it.plano+'</span>'
+          +'<span style="flex:1;font-weight:600;color:var(--primary);'+(concl?'text-decoration:line-through;opacity:.5;':'')+'">'+it.passagem+'</span>'
+          +(concl?'<span style="font-size:.65rem;color:#16a34a;font-weight:700;">✓ Concluído</span>':'')
+          +'</div>';
+      }).join('');
+      devShown=true;
+    } else {
+      document.getElementById('ficha-leitura-div').style.display='none';
+    }
+  } catch(e){ document.getElementById('ficha-leitura-div').style.display='none'; }
+
+  // 2. Motivos de oração ativos no dia
+  try {
+    const oracoes=JSON.parse(localStorage.getItem('dev_oracoes')||'[]');
+    const CAT_COR={'Intercessão':'#6366f1','Agradecimento':'#16a34a','Confissão':'#dc2626','Súplica':'#f97316','Adoração':'#ec4899','Outros':'#64748b'};
+    const ativas=oracoes.filter(function(o){
+      if(!o.inicio&&!o.fim)return true;
+      if(o.inicio&&!o.fim)return ds>=o.inicio;
+      if(!o.inicio&&o.fim)return ds<=o.fim;
+      return ds>=o.inicio&&ds<=o.fim;
+    });
+    if(ativas.length){
+      document.getElementById('ficha-oracao-div').style.display='block';
+      document.getElementById('ficha-oracao').innerHTML=ativas.map(function(o){
+        const cor=CAT_COR[o.categoria]||'#64748b';
+        return '<div style="display:flex;align-items:flex-start;gap:8px;padding:4px 0;border-bottom:1px solid #dbeafe;font-size:.8rem;">'
+          +'<span style="font-size:.63rem;font-weight:700;color:#fff;background:'+cor+';padding:1px 7px;border-radius:4px;white-space:nowrap;margin-top:1px;">'+o.categoria+'</span>'
+          +'<span style="flex:1;color:var(--primary);">'+o.texto+'</span>'
+          +'</div>';
+      }).join('');
+      devShown=true;
+    } else {
+      document.getElementById('ficha-oracao-div').style.display='none';
+    }
+  } catch(e){ document.getElementById('ficha-oracao-div').style.display='none'; }
+
+  // 3. Livro do mês atual
+  try {
+    const dData=new Date(ds+'T12:00:00');
+    const livros=JSON.parse(localStorage.getItem('dev_livros')||'[]');
+    const livrosMes=livros.filter(function(l){return l.ano===dData.getFullYear()&&l.mes===dData.getMonth();});
+    if(livrosMes.length){
+      document.getElementById('ficha-livro-div').style.display='block';
+      document.getElementById('ficha-livro').innerHTML=livrosMes.map(function(l){
+        return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #dbeafe;font-size:.8rem;">'
+          +'<span style="font-size:1.1rem;">📘</span>'
+          +'<span style="flex:1;font-weight:600;color:var(--primary);">'+l.titulo+'</span>'
+          +(l.autor?'<span style="font-size:.68rem;color:#888;">'+l.autor+'</span>':'')
+          +'<span style="font-size:.7rem;font-weight:700;color:#16a34a;">'+l.pct+'%</span>'
+          +'</div>';
+      }).join('');
+      devShown=true;
+    } else {
+      document.getElementById('ficha-livro-div').style.display='none';
+    }
+  } catch(e){ document.getElementById('ficha-livro-div').style.display='none'; }
+
+  // 4. Foco de Santificação da semana
+  try {
+    const sant=JSON.parse(localStorage.getItem('dev_sant')||'{}');
+    if(sant.reflexao||sant.area){
+      document.getElementById('ficha-sant-div').style.display='block';
+      let santHtml='';
+      if(sant.area) santHtml+='<span style="font-size:.72rem;font-weight:700;color:#9333ea;background:#f3e8ff;padding:2px 9px;border-radius:20px;display:inline-block;margin-bottom:5px;">'+sant.area+'</span>';
+      if(sant.reflexao) santHtml+='<div style="font-size:.8rem;color:var(--primary);line-height:1.5;">'+sant.reflexao+'</div>';
+      document.getElementById('ficha-sant').innerHTML=santHtml;
+      devShown=true;
+    } else {
+      document.getElementById('ficha-sant-div').style.display='none';
+    }
+  } catch(e){ document.getElementById('ficha-sant-div').style.display='none'; }
+
+  document.getElementById('ficha-devocional').style.display=devShown?'block':'none';
+}
+function concluirTarefaFicha(idx){
+  pipeItems[idx].status=pipeItems[idx].status==='concluido'?'pendente':'concluido';
+  savePipe();renderPipe();renderFichaDia();
+}
+function imprimirFicha(){
+  // Esconde elementos não-impressos e aciona print
+  document.querySelectorAll('.no-print').forEach(el=>el.style.display='none');
+  document.querySelectorAll('.print-only').forEach(el=>el.style.display='block');
+  window.print();
+  setTimeout(()=>{
+    document.querySelectorAll('.no-print').forEach(el=>el.style.display='');
+    document.querySelectorAll('.print-only').forEach(el=>el.style.display='none');
+  },500);
+}
+renderFichaDia();
+renderAgenda();
+
+// ── AGENDA SEMANAL ───────────────────────────────────
+const ASM_H_INI = 6;    // 06:00
+const ASM_H_FIM = 24;   // 24:00 (meia-noite) — necessário para jogos noturnos
+const ASM_PX    = 54;   // pixels por hora
+
+const ASM_SHORT = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
+const ASM_FULL  = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
+
+let agSemBase = JSON.parse(localStorage.getItem('agenda_sem_base')||'[]');
+
+// ── AGENDA BASE — Sugestão inicial (semear uma vez) ──
+const AGENDA_BASE_V1=[
+  // ── SEGUNDA (0) ─────────────────────────────────────
+  {id:'ab_0_dev',tipo:'bloco',area:'Devocional',   titulo:'Oração e Palavra',                   dia:0,horaIni:'07:30',horaFim:'08:30'},
+  {id:'ab_0_pe1',tipo:'bloco',area:'Pessoal',      titulo:'Exercício + Corpo',                  dia:0,horaIni:'08:30',horaFim:'10:00'},
+  {id:'ab_0_pr1',tipo:'bloco',area:'Profissional', titulo:'Foco Profissional — Manhã',          dia:0,horaIni:'10:00',horaFim:'12:30'},
+  {id:'ab_0_pe2',tipo:'bloco',area:'Pessoal',      titulo:'Almoço e Descanso',                  dia:0,horaIni:'12:30',horaFim:'13:30'},
+  {id:'ab_0_pr2',tipo:'bloco',area:'Profissional', titulo:'Foco Profissional — Tarde',          dia:0,horaIni:'13:30',horaFim:'16:30'},
+  {id:'ab_0_fin',tipo:'bloco',area:'Financeiro',   titulo:'Gestão Financeira',                  dia:0,horaIni:'16:30',horaFim:'18:30'},
+  // ── TERÇA (1) ───────────────────────────────────────
+  {id:'ab_1_dev',tipo:'bloco',area:'Devocional',   titulo:'Oração e Palavra',                   dia:1,horaIni:'07:30',horaFim:'08:30'},
+  {id:'ab_1_pe1',tipo:'bloco',area:'Pessoal',      titulo:'Exercício + Corpo',                  dia:1,horaIni:'08:30',horaFim:'10:00'},
+  {id:'ab_1_pr1',tipo:'bloco',area:'Profissional', titulo:'Foco Profissional — Manhã',          dia:1,horaIni:'10:00',horaFim:'12:30'},
+  {id:'ab_1_pe2',tipo:'bloco',area:'Pessoal',      titulo:'Almoço e Descanso',                  dia:1,horaIni:'12:30',horaFim:'13:30'},
+  {id:'ab_1_pr2',tipo:'bloco',area:'Profissional', titulo:'Foco Profissional — Tarde',          dia:1,horaIni:'13:30',horaFim:'16:30'},
+  {id:'ab_1_min',tipo:'bloco',area:'Ministerial',  titulo:'Estudo e Ministério',                dia:1,horaIni:'16:30',horaFim:'18:30'},
+  // ── QUARTA (2) ──────────────────────────────────────
+  {id:'ab_2_dev',tipo:'bloco',area:'Devocional',   titulo:'Oração e Palavra',                   dia:2,horaIni:'07:30',horaFim:'08:30'},
+  {id:'ab_2_pe1',tipo:'bloco',area:'Pessoal',      titulo:'Exercício + Corpo',                  dia:2,horaIni:'08:30',horaFim:'10:00'},
+  {id:'ab_2_pr1',tipo:'bloco',area:'Profissional', titulo:'Foco Profissional — Manhã',          dia:2,horaIni:'10:00',horaFim:'13:00'},
+  {id:'ab_2_pe2',tipo:'bloco',area:'Pessoal',      titulo:'Almoço e Descanso',                  dia:2,horaIni:'13:00',horaFim:'14:00'},
+  {id:'ab_2_fam',tipo:'bloco',area:'Familiar',     titulo:'Família — Selma e Relações',         dia:2,horaIni:'14:00',horaFim:'19:00'},
+  // ── QUINTA (3) ──────────────────────────────────────
+  {id:'ab_3_dev',tipo:'bloco',area:'Devocional',   titulo:'Oração e Palavra',                   dia:3,horaIni:'07:30',horaFim:'08:30'},
+  {id:'ab_3_pe1',tipo:'bloco',area:'Pessoal',      titulo:'Exercício + Corpo',                  dia:3,horaIni:'08:30',horaFim:'10:00'},
+  {id:'ab_3_pr1',tipo:'bloco',area:'Profissional', titulo:'Foco Profissional — Manhã',          dia:3,horaIni:'10:00',horaFim:'12:30'},
+  {id:'ab_3_pe2',tipo:'bloco',area:'Pessoal',      titulo:'Almoço e Descanso',                  dia:3,horaIni:'12:30',horaFim:'13:30'},
+  {id:'ab_3_pr2',tipo:'bloco',area:'Profissional', titulo:'Foco Profissional — Tarde',          dia:3,horaIni:'13:30',horaFim:'15:30'},
+  {id:'ab_3_fin',tipo:'bloco',area:'Financeiro',   titulo:'Gestão Financeira e Patrimonial',    dia:3,horaIni:'15:30',horaFim:'17:30'},
+  {id:'ab_3_fam',tipo:'bloco',area:'Familiar',     titulo:'Família — Selma e Relações',         dia:3,horaIni:'17:30',horaFim:'19:00'},
+  // ── SEXTA (4) ───────────────────────────────────────
+  {id:'ab_4_dev',tipo:'bloco',area:'Devocional',   titulo:'Oração e Palavra',                   dia:4,horaIni:'07:30',horaFim:'08:30'},
+  {id:'ab_4_pe1',tipo:'bloco',area:'Pessoal',      titulo:'Exercício + Corpo',                  dia:4,horaIni:'08:30',horaFim:'10:00'},
+  {id:'ab_4_pr1',tipo:'bloco',area:'Profissional', titulo:'Foco Profissional — Manhã',          dia:4,horaIni:'10:00',horaFim:'12:30'},
+  {id:'ab_4_pe2',tipo:'bloco',area:'Pessoal',      titulo:'Almoço e Descanso',                  dia:4,horaIni:'12:30',horaFim:'13:30'},
+  {id:'ab_4_pr2',tipo:'bloco',area:'Profissional', titulo:'Foco Profissional — Tarde',          dia:4,horaIni:'13:30',horaFim:'15:30'},
+  {id:'ab_4_ges',tipo:'bloco',area:'Geral',        titulo:'Gestão da Vida — Avaliação Semanal', dia:4,horaIni:'15:30',horaFim:'17:30'},
+  {id:'ab_4_fam',tipo:'bloco',area:'Familiar',     titulo:'Família — Selma e Relações',         dia:4,horaIni:'17:30',horaFim:'19:00'},
+  // ── SÁBADO (5) ──────────────────────────────────────
+  {id:'ab_5_dev',tipo:'bloco',area:'Devocional',   titulo:'Dia do Senhor — Culto e Adoração',   dia:5,horaIni:'08:30',horaFim:'10:00'},
+  {id:'ab_5_soc',tipo:'bloco',area:'Social',       titulo:'Social e Comunidade',                dia:5,horaIni:'10:00',horaFim:'12:00'},
+  {id:'ab_5_fa2',tipo:'bloco',area:'Familiar',     titulo:'Almoço e Comunhão',                  dia:5,horaIni:'12:00',horaFim:'14:00'},
+  {id:'ab_5_pes',tipo:'bloco',area:'Pessoal',      titulo:'Descanso — Restauração',             dia:5,horaIni:'14:00',horaFim:'17:00'},
+  {id:'ab_5_fa3',tipo:'bloco',area:'Familiar',     titulo:'Família — Selma',                    dia:5,horaIni:'17:00',horaFim:'19:00'},
+  {id:'ab_5_ges',tipo:'bloco',area:'Geral',        titulo:'Preparação da Semana',               dia:5,horaIni:'19:00',horaFim:'20:00'},
+  // ── DOMINGO (6) — sem alterações ────────────────────
+  {id:'ab_6_dev',tipo:'bloco',area:'Devocional',   titulo:'Dia do Senhor — Culto e Adoração',   dia:6,horaIni:'07:00',horaFim:'10:00'},
+  {id:'ab_6_fa1',tipo:'bloco',area:'Familiar',     titulo:'Família — Ligações e Presença',      dia:6,horaIni:'10:00',horaFim:'12:00'},
+  {id:'ab_6_fa2',tipo:'bloco',area:'Familiar',     titulo:'Almoço e Comunhão',                  dia:6,horaIni:'12:00',horaFim:'14:00'},
+  {id:'ab_6_pes',tipo:'bloco',area:'Pessoal',      titulo:'Descanso — Restauração',             dia:6,horaIni:'14:00',horaFim:'17:00'},
+  {id:'ab_6_fa3',tipo:'bloco',area:'Familiar',     titulo:'Família — Selma',                    dia:6,horaIni:'17:00',horaFim:'19:00'},
+  {id:'ab_6_ges',tipo:'bloco',area:'Geral',        titulo:'Preparação da Semana',               dia:6,horaIni:'19:00',horaFim:'20:00'},
+];
+(function seedAgendaBase(){
+  if(localStorage.getItem('agenda_base_v2')) return;
+  agSemBase=[...AGENDA_BASE_V1];
+  saveAgSemBase();
+  localStorage.setItem('agenda_base_v1','1');
+  localStorage.setItem('agenda_base_v2','1');
+})();
+let agSemModo = 'base';
+let agSemTipo = 'bloco';
+let agSemRef  = getSegunda(new Date());
+
+function saveAgSemBase(){ localStorage.setItem('agenda_sem_base', JSON.stringify(agSemBase)); }
+
+function getSegunda(d){
+  const x=new Date(d); const dw=x.getDay();
+  x.setDate(x.getDate()+(dw===0?-6:1-dw));
+  x.setHours(0,0,0,0); return x;
+}
+function getSemanaDates(seg){
+  return Array.from({length:7},(_,i)=>{ const d=new Date(seg); d.setDate(d.getDate()+i); return d; });
+}
+function horaF(s){
+  if(!s) return 0;
+  const [h,m]=s.split(':').map(Number);
+  return h+(m||0)/60;
+}
+function floatToHora(f){
+  const h=Math.floor(f); const m=Math.round((f-h)*60);
+  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+}
+
+function populateHoraSelects(){
+  const s1=document.getElementById('asf-ini'),s2=document.getElementById('asf-fim');
+  if(!s1||!s2) return;
+  let o='';
+  for(let h=ASM_H_INI;h<=ASM_H_FIM;h++){
+    const hh=String(h).padStart(2,'0');
+    o+=`<option value="${hh}:00">${hh}:00</option>`;
+    if(h<ASM_H_FIM) o+=`<option value="${hh}:30">${hh}:30</option>`;
+  }
+  s1.innerHTML=o; s2.innerHTML=o;
+  s1.value='08:00'; s2.value='12:00';
+}
+
+function setAgSemModo(modo,btn){
+  agSemModo=modo;
+  ['asm-base','asm-atual','asm-sel'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.classList.remove('active');
+  });
+  if(btn) btn.classList.add('active');
+  const nav=document.getElementById('asm-nav');
+  if(nav) nav.style.display=(modo==='base'?'none':'flex');
+  if(modo==='atual') agSemRef=getSegunda(new Date());
+  renderAgSem();
+}
+function setAgSemTipo(tipo,btn){
+  agSemTipo=tipo;
+  ['asf-t-bloco','asf-t-comp'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.classList.remove('active');
+  });
+  if(btn) btn.classList.add('active');
+}
+function navSem(dir){
+  agSemRef=new Date(agSemRef); agSemRef.setDate(agSemRef.getDate()+dir*7);
+  renderAgSem();
+}
+function navSemHoje(){ agSemRef=getSegunda(new Date()); renderAgSem(); }
+
+function renderAgSem(){
+  const container=document.getElementById('ag-sem-container');
+  if(!container) return;
+  const isModoBase=agSemModo==='base';
+  const totalH=ASM_H_FIM-ASM_H_INI;
+  const totalPx=totalH*ASM_PX;
+  const semana=getSemanaDates(agSemRef);
+
+  // Update nav label
+  const labelEl=document.getElementById('asm-label');
+  if(labelEl){
+    if(isModoBase) labelEl.textContent='Agenda Base — Repetição semanal';
+    else{
+      const ini=semana[0].toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+      const fim=semana[6].toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});
+      labelEl.textContent=`${ini} a ${fim}`;
+    }
+  }
+
+  // Coletar eventos por dia
+  const evsByDay=Array.from({length:7},()=>[]);
+  // Blocos base (sempre visíveis)
+  agSemBase.forEach(b=>{
+    if(b.dia>=0&&b.dia<=6) evsByDay[b.dia].push({...b,_src:'base',_tipo:b.tipo||'bloco'});
+  });
+  // Eventos específicos da semana (só nos modos atual/sel)
+  if(!isModoBase){
+    agItems.forEach(a=>{
+      if(!a.hora) return;
+      semana.forEach((dia,i)=>{
+        if(dtStr(dia)===a.data){
+          evsByDay[i].push({
+            id:'ag_'+a.texto, _src:'week', _tipo:'comp',
+            titulo:a.texto, area:a.area,
+            horaIni:a.hora, horaFim:a.hora_fim||floatToHora(horaF(a.hora)+1),
+            nota:a.nota||'',
+          });
+        }
+      });
+    });
+  }
+
+  let html='';
+
+  // ── CABEÇALHO ──────────────────────────────────────
+  html+='<div class="ag-sem-head">';
+  html+='<div class="ag-sem-hcol"></div>';
+  html+='<div class="ag-sem-hdias">';
+  semana.forEach((dia,i)=>{
+    const ehHoje=!isModoBase&&dtStr(dia)===hojeStr;
+    html+=`<div class="ag-sem-hdia ${ehHoje?'hoje-h':''}">
+      ${ASM_SHORT[i]}
+      ${!isModoBase?`<div class="num">${dia.getDate()}/${String(dia.getMonth()+1).padStart(2,'0')}</div>`:''}
+    </div>`;
+  });
+  html+='</div></div>';
+
+  // ── CORPO ──────────────────────────────────────────
+  html+=`<div class="ag-sem-body" style="height:${totalPx}px;">`;
+
+  // Coluna de horas
+  html+='<div class="ag-sem-horas">';
+  for(let h=ASM_H_INI;h<=ASM_H_FIM;h++){
+    const top=(h-ASM_H_INI)*ASM_PX;
+    const lbl = h===24 ? '00h' : String(h).padStart(2,'0')+'h';
+    html+=`<div class="ag-sem-hl" style="top:${top}px">${lbl}</div>`;
+  }
+  html+='</div>';
+
+  // Cores dos períodos de localização
+  const PERIODO_CORES = {
+    brasil:   {bg:'rgba(220,252,231,.55)', borda:'#16a34a'},
+    italia:   {bg:'rgba(219,234,254,.55)', borda:'#2563eb'},
+    emirados: {bg:'rgba(254,202,202,.55)', borda:'#dc2626'},
+  };
+
+  // Colunas dos dias
+  html+='<div class="ag-sem-dias">';
+  semana.forEach((dia,diaIdx)=>{
+    const ehHoje=!isModoBase&&dtStr(dia)===hojeStr;
+    const ds=dtStr(dia);
+    // Fundo: cor do local onde estou (só nos modos atual/sel)
+    let colBg='';
+    if(!isModoBase){
+      const per=getLocalPara(ds);
+      if(per && PERIODO_CORES[per.local]){
+        colBg=`background:${PERIODO_CORES[per.local].bg};`;
+      }
+    }
+    html+=`<div class="ag-sem-col ${ehHoje?'hoje-col':''}" style="${colBg}">`;
+
+    // Linhas de hora
+    for(let h=ASM_H_INI;h<=ASM_H_FIM;h++){
+      const top=(h-ASM_H_INI)*ASM_PX;
+      html+=`<div class="ag-sem-hline" style="top:${top}px"></div>`;
+      if(h<ASM_H_FIM) html+=`<div class="ag-sem-hline meio" style="top:${top+ASM_PX/2}px"></div>`;
+    }
+
+    // Eventos e blocos
+    evsByDay[diaIdx].forEach(ev=>{
+      const hI=horaF(ev.horaIni), hFraw=horaF(ev.horaFim);
+      if(isNaN(hI)||hI<ASM_H_INI||hI>ASM_H_FIM) return;
+      // Se hora_fim <= hora_ini → cruza meia-noite → usa 24 como fim
+      const hF = (!hFraw||hFraw<=hI) ? ASM_H_FIM : hFraw;
+      const top=(hI-ASM_H_INI)*ASM_PX;
+      const height=Math.max(20,(Math.min(hF,ASM_H_FIM)-hI)*ASM_PX-2);
+      const cor=CORES[ev.area]||'#64748b';
+      const isBloco=ev._tipo==='bloco';
+      const tituloDisplay=ev.titulo||(isBloco?'BLOCO '+(ev.area||'').toUpperCase():(ev.area||''));
+      const delId=ev.id||('b_'+diaIdx+'_'+ev.horaIni);
+      html+=`<div class="ag-sem-ev ${isBloco?'bloco':'comp'}"
+        style="top:${top}px;height:${height}px;background:${cor};"
+        title="${tituloDisplay} | ${ev.horaIni}–${ev.horaFim}${ev.nota?' | '+ev.nota:''}">
+        <div class="ag-sem-ev-tit">${tituloDisplay}</div>
+        ${height>26?`<div class="ag-sem-ev-hr">${ev.horaIni} – ${ev.horaFim}</div>`:''}
+        ${ev._src==='base'?`<button class="ag-sem-edit-btn" onclick="abrirEditBloco('${ev.id}');event.stopPropagation()">✏️</button><button class="ag-sem-del-btn" onclick="delAgSemBase('${ev.id}')">✕</button>`:''}
+      </div>`;
+    });
+
+    // Marcador de hora atual
+    if(ehHoje){
+      const now=new Date();
+      const hNow=now.getHours()+now.getMinutes()/60;
+      if(hNow>=ASM_H_INI&&hNow<=ASM_H_FIM){
+        const top=(hNow-ASM_H_INI)*ASM_PX;
+        html+=`<div class="ag-sem-agora" style="top:${top}px"></div>`;
+      }
+    }
+    html+='</div>';
+  });
+  html+='</div>';
+  html+='</div>'; // fim body
+
+  container.innerHTML=html;
+}
+
+function addAgSemItem(){
+  const area   =document.getElementById('asf-area').value;
+  const titulo =document.getElementById('asf-titulo').value.trim();
+  const dia    =parseInt(document.getElementById('asf-dia').value);
+  const horaIni=document.getElementById('asf-ini').value;
+  const horaFim=document.getElementById('asf-fim').value;
+  const recorr =document.getElementById('asf-recorr').value;
+  if(!horaIni||!horaFim) return;
+  if(horaF(horaFim)<=horaF(horaIni)){ alert('O horário de fim deve ser posterior ao início.'); return; }
+
+  if(recorr==='base'){
+    // Bloco recorrente
+    agSemBase.push({id:'asb_'+Date.now(), tipo:agSemTipo, area, titulo, dia, horaIni, horaFim});
+    saveAgSemBase();
+  } else {
+    // Evento para data específica
+    const semana=getSemanaDates(agSemRef);
+    const dataEspec=dtStr(semana[dia]);
+    const tituloFinal=titulo||(agSemTipo==='bloco'?'BLOCO '+area.toUpperCase():area);
+    agItems.push({texto:tituloFinal, data:dataEspec, hora:horaIni, hora_fim:horaFim, area, nota:agSemTipo==='bloco'?'Bloco de área':''});
+    saveAg();
+  }
+  document.getElementById('asf-titulo').value='';
+  renderAgSem();
+  renderCal();
+}
+function delAgSemBase(id){
+  agSemBase=agSemBase.filter(b=>b.id!==id);
+  saveAgSemBase(); renderAgSem();
+}
+
+// ── EDIÇÃO DE BLOCOS BASE ──────────────────────────────────────────────────
+const AREAS_LISTA=['Devocional','Pessoal','Familiar','Financeiro','Profissional','Ministerial','Social','Geral'];
+let _editBlocoId=null;
+function abrirEditBloco(id){
+  const b=agSemBase.find(x=>x.id===id); if(!b) return;
+  _editBlocoId=id;
+  document.getElementById('bef-titulo').value=b.titulo||'';
+  document.getElementById('bef-area').value=b.area||'Geral';
+  document.getElementById('bef-ini').value=b.horaIni||'';
+  document.getElementById('bef-fim').value=b.horaFim||'';
+  document.getElementById('bloco-edit-overlay').classList.add('open');
+}
+function fecharEditBloco(){
+  document.getElementById('bloco-edit-overlay').classList.remove('open');
+  _editBlocoId=null;
+}
+function salvarEditBloco(){
+  if(!_editBlocoId) return;
+  const b=agSemBase.find(x=>x.id===_editBlocoId); if(!b) return;
+  const ini=document.getElementById('bef-ini').value;
+  const fim=document.getElementById('bef-fim').value;
+  if(!ini||!fim||horaF(fim)<=horaF(ini)){alert('Horário inválido.');return;}
+  b.titulo=document.getElementById('bef-titulo').value.trim()||b.titulo;
+  b.area=document.getElementById('bef-area').value;
+  b.horaIni=ini; b.horaFim=fim;
+  saveAgSemBase(); fecharEditBloco(); renderAgSem();
+}
+
+// Init
+populateHoraSelects();
+setAgSemModo('base', document.getElementById('asm-base'));
+
+// ── CALENDÁRIO ────────────────────────────────────────
+const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DIAS_N=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const PAIS_COR={brasil:'#bbf7d0',italia:'#bfdbfe',emirados:'#fecaca'};
+const PAIS_BORDA={brasil:'#16a34a',italia:'#2563eb',emirados:'#dc2626'};
+
+function getLocalPara(dateStr){
+  for(const p of PERIODOS){ if(dateStr>=p.inicio&&dateStr<=p.fim)return p; }
+  return null;
+}
+function renderCal(){
+  const titulo=document.getElementById('cal-titulo');
+  const badge=document.getElementById('cal-local-badge');
+  const grid=document.getElementById('cal-grid');
+  const info=document.getElementById('cal-info');
+  titulo.textContent=MESES[calMes]+' '+calAno;
+
+  // badge do local do mês
+  const midMonth=`${calAno}-${String(calMes+1).padStart(2,'0')}-15`;
+  const p=getLocalPara(midMonth);
+  badge.innerHTML=p?`<span class="local-badge" style="background:${p.cor};border:1px solid ${p.borda};color:${PAIS_BORDA[p.local]}">${p.flag} ${p.local==='brasil'?'Brasil':p.local==='italia'?'Itália':'Emirados'}</span>`:'';
+
+  grid.innerHTML='';
+  DIAS_N.forEach(d=>{const e=document.createElement('div');e.className='cal-dn';e.textContent=d;grid.appendChild(e);});
+
+  const primeiro=new Date(calAno,calMes,1).getDay();
+  const total=new Date(calAno,calMes+1,0).getDate();
+
+  for(let i=0;i<primeiro;i++){const e=document.createElement('div');e.style.visibility='hidden';grid.appendChild(e);}
+
+  const infoTextos=[];
+  for(let d=1;d<=total;d++){
+    const ds=`${calAno}-${String(calMes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const periodo=getLocalPara(ds);
+    const eViagem=DIAS_VIAGEM.has(ds);
+    const feriadosDia=FERIADOS[ds]||[];
+    const agDia=agItems.filter(a=>a.data===ds);
+    const copaDia=agDia.filter(a=>a.id&&a.id.startsWith('copa_'));
+    const anivDia=[]; // aniversários removidos do calendário geral
+
+    const el=document.createElement('div');
+    el.className='cal-day';
+
+    // cor de fundo — SEMPRE representa "onde estou" (nunca sobrepor por eventos)
+    if(periodo) el.style.background=periodo.cor;
+
+    // Feriados: círculo colorido à esquerda (não altera fundo do período)
+    if(feriadosDia.length){
+      feriadosDia.forEach(f=>{
+        const dot=document.createElement('span');
+        dot.className='feriado-dot';
+        dot.style.background=PAIS_BORDA[f.pais]||'#888';
+        dot.title=f.nome;
+        el.appendChild(dot);
+      });
+      feriadosDia.forEach(f=>infoTextos.push(`${f.pais==='brasil'?'🇧🇷':f.pais==='italia'?'🇮🇹':'🇦🇪'} Dia ${d} — ${f.nome}`));
+    }
+
+    // Número do dia + badge de compromissos (fundo nunca muda por eventos)
+    const numSpan=document.createElement('span');
+    numSpan.textContent=d;
+
+    if(ds===hojeStr){
+      el.classList.add('hoje');
+      el.innerHTML='';
+      el.textContent=d;
+    } else {
+      el.appendChild(numSpan);
+      // Badge preto com quantidade de compromissos no canto direito
+      if(agDia.length){
+        agDia.forEach(a=>infoTextos.push(`📌 Dia ${d} — ${a.hora?a.hora+' ':''}<strong>${a.texto}</strong> (${a.area})`));
+        const badge=document.createElement('span');
+        badge.textContent=agDia.length;
+        badge.style.cssText='position:absolute;top:1px;right:2px;background:#111;color:#fff;border-radius:50%;width:13px;height:13px;font-size:.52rem;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1;';
+        el.style.position='relative';
+        el.appendChild(badge);
+      }
+    }
+    // clique no dia: filtra agenda E abre Ficha do Dia
+    el.style.cursor='pointer';
+    el.onclick=()=>{
+      filtrarAgendaDia(ds);
+      document.getElementById('ficha-data').value=ds;
+      renderFichaDia();
+      document.getElementById('ficha-print-wrap').scrollIntoView({behavior:'smooth',block:'start'});
+    };
+
+    if(eViagem){
+      el.classList.add('viagem-dia');
+      const vinfo=ds==='2026-07-13'?'✈️ Viagem: Itália → Emirados':'✈️ Viagem: Emirados → Brasil';
+      infoTextos.unshift(`<strong>${vinfo}</strong>`);
+    }
+    const titleParts=[...feriadosDia.map(f=>f.nome),...anivDia.map(a=>'🎂 '+a.nome),...agDia.map(a=>a.texto)];
+    if(titleParts.length) el.title=titleParts.join(' | ');
+    grid.appendChild(el);
+  }
+  info.innerHTML=infoTextos.length?infoTextos.map(t=>`<div style="margin-bottom:3px">${t}</div>`).join(''):'<span style="font-style:italic;color:#aaa;font-size:.76rem">Sem eventos marcados neste mês.</span>';
+}
+function mudarMes(d){
+  calMes+=d;
+  if(calMes>11){calMes=0;calAno++;}if(calMes<0){calMes=11;calAno--;}
+  renderCal();
+}
+renderCal();
+
+// ── TRADUTOR ──────────────────────────────────────────
+const LANG_NAMES={pt:'Português',it:'Italiano',en:'Inglês'};
+const LANG_BCP={pt:'pt-BR',it:'it-IT',en:'en-US'};
+
+function falarTexto(elId, lang){
+  if(!window.speechSynthesis){alert('Seu navegador não suporta síntese de voz.');return;}
+  const el=document.getElementById(elId);
+  const txt=(el.value||el.textContent||'').trim();
+  if(!txt||txt==='A tradução aparecerá aqui...')return;
+  // Para qualquer fala em andamento
+  window.speechSynthesis.cancel();
+  const btn=el.parentElement?.querySelector('.trad-speak-btn')||el.previousElementSibling?.querySelector('.trad-speak-btn');
+  const utterance=new SpeechSynthesisUtterance(txt);
+  utterance.lang=LANG_BCP[lang]||'pt-BR';
+  utterance.rate=0.92;
+  // Tenta escolher voz nativa do idioma
+  const vozes=window.speechSynthesis.getVoices();
+  const voz=vozes.find(v=>v.lang.startsWith(LANG_BCP[lang]?.slice(0,2)||'pt'));
+  if(voz)utterance.voice=voz;
+  if(btn){btn.classList.add('speaking');utterance.onend=()=>btn.classList.remove('speaking');}
+  window.speechSynthesis.speak(utterance);
+}
+function setLang(from,to){
+  tradLangFrom=from; tradLangTo=to;
+  document.querySelectorAll('.lbtn').forEach(b=>b.classList.remove('active'));
+  const bid=`lbtn-${from}-${to}`;
+  const btn=document.getElementById(bid);
+  if(btn)btn.classList.add('active');
+  document.getElementById('trad-from-label').textContent=LANG_NAMES[from];
+  document.getElementById('trad-to-label').textContent=LANG_NAMES[to];
+}
+async function traduzir(){
+  const txt=document.getElementById('trad-input').value.trim();
+  const res=document.getElementById('trad-result');
+  if(!txt){res.textContent='Digite algo para traduzir.';return;}
+  res.textContent='Traduzindo...';
+  try{
+    const r=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(txt)}&langpair=${tradLangFrom}|${tradLangTo}`);
+    const d=await r.json();
+    res.textContent=d.responseData?.translatedText||'Erro na tradução.';
+  }catch{res.textContent='Sem conexão ou erro no serviço.';}
+}
+setLang('pt','it');
+
+// ── LINKS RÁPIDOS ─────────────────────────────────────
+const DEFAULT_LINKS=[
+  {icone:'📧',nome:'Gmail',url:'https://mail.google.com'},
+  {icone:'📨',nome:'E-mail 2',url:'https://mail.google.com'},
+  {icone:'📩',nome:'E-mail 3',url:'https://outlook.com'},
+  {icone:'📬',nome:'E-mail 4',url:'https://outlook.com'},
+  {icone:'💬',nome:'WhatsApp Web',url:'https://web.whatsapp.com'},
+  {icone:'🎨',nome:'Canva',url:'https://canva.com'},
+  {icone:'💼',nome:'Microsoft 365',url:'https://www.office.com'},
+];
+let links=JSON.parse(localStorage.getItem('links_rapidos')||JSON.stringify(DEFAULT_LINKS));
+function saveLinks(){localStorage.setItem('links_rapidos',JSON.stringify(links));}
+function renderLinks(){
+  const g=document.getElementById('links-grid');
+  g.innerHTML=links.map((l,i)=>`
+    <a class="link-btn" href="${l.url}" >${l.icone} ${l.nome}
+      <span class="link-x" onclick="event.preventDefault();delLink(${i})">✕</span>
+    </a>`).join('');
+}
+function addLink(){
+  const nome=document.getElementById('link-nome').value.trim();
+  const url=document.getElementById('link-url').value.trim();
+  const icone=document.getElementById('link-icone').value.trim()||'🔗';
+  if(!nome||!url)return;
+  links.push({icone,nome,url});saveLinks();renderLinks();
+  ['link-nome','link-url','link-icone'].forEach(id=>document.getElementById(id).value='');
+}
+function delLink(i){links.splice(i,1);saveLinks();renderLinks();}
+renderLinks();
+
+// ── BACKUP ────────────────────────────────────────────
+const CHAVES=[
+  'palavra_txt','palavra_ref','agenda_items','pipe_items','links_rapidos','foto_perfil','fuso_ativo',
+  ...['devocional','pessoal','familiar','financeiro','profissional','ministerial','social']
+    .flatMap(k=>['nota_'+k,'st_nota_'+k]),
+];
+function exportarDados(){
+  const dados={};
+  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);dados[k]=localStorage.getItem(k);}
+  const blob=new Blob([JSON.stringify(dados,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`backup_minha_vida_${hojeStr}.json`;
+  a.click();
+}
+function importarDados(){
+  const input=document.createElement('input');input.type='file';input.accept='.json';
+  input.onchange=e=>{
+    const file=e.target.files[0];if(!file)return;
+    const r=new FileReader();
+    r.onload=ev=>{
+      try{
+        const d=JSON.parse(ev.target.result);
+        Object.entries(d).forEach(([k,v])=>localStorage.setItem(k,v));
+        alert('✅ Importado com sucesso! Recarregando...');
+        location.reload();
+      }catch{alert('❌ Arquivo inválido.');}
+    };
+    r.readAsText(file);
+  };
+  input.click();
+}
+
+// ── GERENCIADOR DE SENHAS ─────────────────────────────
+const PIN_KEY = 'senha_pin';
+const SENHAS_KEY = 'senhas_cofre';
+let senhasDesbloqueadas = false;
+
+function verificarPin(){
+  const pin = document.getElementById('pin-input').value;
+  const pinSalvo = localStorage.getItem(PIN_KEY);
+  if(!pinSalvo){
+    // Primeiro acesso — define o PIN
+    if(pin.length < 4){ alert('O código deve ter ao menos 4 caracteres.'); return; }
+    localStorage.setItem(PIN_KEY, pin);
+    desbloquearSenhas();
+  } else if(pin === pinSalvo){
+    desbloquearSenhas();
+  } else {
+    document.getElementById('pin-erro').style.display='block';
+    document.getElementById('pin-input').value='';
+    setTimeout(()=>document.getElementById('pin-erro').style.display='none', 3000);
+  }
+}
+function desbloquearSenhas(){
+  senhasDesbloqueadas = true;
+  document.getElementById('senhas-locked').style.display='none';
+  document.getElementById('senhas-unlocked').style.display='block';
+  document.getElementById('pin-input').value='';
+  renderSenhas();
+  // Auto-bloquear após 5 minutos de inatividade
+  clearTimeout(window._senhaTimer);
+  window._senhaTimer = setTimeout(bloquearSenhas, 5*60*1000);
+}
+function bloquearSenhas(){
+  senhasDesbloqueadas = false;
+  document.getElementById('senhas-locked').style.display='block';
+  document.getElementById('senhas-unlocked').style.display='none';
+  clearTimeout(window._senhaTimer);
+}
+function alterarPin(){
+  const atual = prompt('Digite o código atual:');
+  if(atual !== localStorage.getItem(PIN_KEY)){ alert('Código incorreto.'); return; }
+  const novo = prompt('Digite o novo código (mín. 4 caracteres):');
+  if(!novo || novo.length < 4){ alert('Código inválido.'); return; }
+  const conf = prompt('Confirme o novo código:');
+  if(novo !== conf){ alert('Os códigos não coincidem.'); return; }
+  localStorage.setItem(PIN_KEY, novo);
+  alert('✅ Código alterado com sucesso!');
+}
+function renderSenhas(){
+  const senhas = JSON.parse(localStorage.getItem(SENHAS_KEY)||'[]');
+  const busca = (document.getElementById('senhas-busca')||{value:''}).value.toLowerCase();
+  const el = document.getElementById('senhas-lista');
+  const filtradas = busca ? senhas.filter(s=>(s.servico+s.usuario+s.cat).toLowerCase().includes(busca)) : senhas;
+  const catBadge = {'E-mail':'#dbeafe','Banco':'#dcfce7','Streaming':'#f3e8ff','Trabalho':'#ffedd5','Redes sociais':'#fce7f3','Outros':'#f0f4f8'};
+  const catColor = {'E-mail':'#1e40af','Banco':'#15803d','Streaming':'#6b21a8','Trabalho':'#9a3412','Redes sociais':'#9d174d','Outros':'#475569'};
+  if(!filtradas.length){
+    el.innerHTML=`<div style="font-size:.78rem;color:#aaa;font-style:italic;padding:6px 0">${senhas.length?'Nenhum resultado.':'Nenhuma senha cadastrada ainda.'}</div>`;
+    return;
+  }
+  el.innerHTML = filtradas.map((s,_i)=>{
+    const ri = senhas.indexOf(s);
+    const bg = catBadge[s.cat]||'#f0f4f8';
+    const co = catColor[s.cat]||'#475569';
+    return `<div class="senha-row">
+      <span class="sv-nome">${s.servico}</span>
+      <span class="sv-user">${s.usuario||'—'}</span>
+      <span style="background:${bg};color:${co};padding:2px 9px;border-radius:20px;font-size:.65rem;font-weight:700;">${s.cat}</span>
+      <span class="senha-val" id="sv-val-${ri}">••••••••</span>
+      <button class="sv-show-btn" onclick="toggleSenha(${ri})">👁 Ver</button>
+      <button class="sv-copy-btn" onclick="copiarSenha('${s.senha.replace(/'/g,"\\'")}')">📋 Copiar</button>
+      ${s.obs?`<span style="font-size:.68rem;opacity:.5;flex:1">${s.obs}</span>`:''}
+      <button style="background:rgba(239,68,68,.12);border:none;border-radius:5px;padding:2px 8px;font-size:.7rem;color:#dc2626;cursor:pointer;" onclick="delSenha(${ri})">✕</button>
+    </div>`;
+  }).join('');
+}
+function toggleSenha(ri){
+  const senhas = JSON.parse(localStorage.getItem(SENHAS_KEY)||'[]');
+  const el = document.getElementById('sv-val-'+ri);
+  if(!el) return;
+  el.textContent = el.textContent==='••••••••' ? senhas[ri].senha : '••••••••';
+  // Esconde automaticamente após 10s
+  if(el.textContent!=='••••••••') setTimeout(()=>{if(el)el.textContent='••••••••';},10000);
+}
+function copiarSenha(senha){
+  navigator.clipboard.writeText(senha).then(()=>{
+    const btn = event.target; btn.textContent='✅ Copiada!';
+    setTimeout(()=>btn.textContent='📋 Copiar',2000);
+  }).catch(()=>alert('Senha: '+senha));
+}
+function addSenha(){
+  const servico = document.getElementById('sv-servico').value.trim();
+  if(!servico) return;
+  const senhas = JSON.parse(localStorage.getItem(SENHAS_KEY)||'[]');
+  senhas.push({
+    servico,
+    usuario: document.getElementById('sv-usuario').value.trim(),
+    senha:   document.getElementById('sv-senha').value,
+    cat:     document.getElementById('sv-cat').value,
+    obs:     document.getElementById('sv-obs').value.trim(),
+  });
+  localStorage.setItem(SENHAS_KEY, JSON.stringify(senhas));
+  renderSenhas();
+  ['sv-servico','sv-usuario','sv-senha','sv-obs'].forEach(id=>document.getElementById(id).value='');
+}
+function delSenha(ri){
+  if(!confirm('Remover esta senha?')) return;
+  const senhas = JSON.parse(localStorage.getItem(SENHAS_KEY)||'[]');
+  senhas.splice(ri,1);
+  localStorage.setItem(SENHAS_KEY, JSON.stringify(senhas));
+  renderSenhas();
+}
+// Aviso de primeiro acesso
+if(!localStorage.getItem(PIN_KEY)){
+  document.querySelector('#senhas-locked div div:last-child').textContent =
+    '⚠️ Primeiro acesso: o código que você digitar será salvo como seu código secreto.';
+}
+
+// ── FAMÍLIA (movida para DASHBOARD_FAMILIAR.html) ────
+const FAMILIA=[
+  {nome:'Selma',rel:'Esposa',g:'nuclear'},
+  {nome:'Rafael',rel:'Filho — 30/05/1990',g:'nuclear'},
+  {nome:'Andrea',rel:'Nora (esposa do Rafael)',g:'nuclear'},
+  {nome:'Rodrigo',rel:'Filho — 18/05/1994',g:'nuclear'},
+  {nome:'Monica',rel:'Nora (esposa do Rodrigo)',g:'nuclear'},
+  {nome:'Adriana',rel:'Filha — 18/05/1994',g:'nuclear'},
+  {nome:'Gabriel',rel:'Genro (marido da Adriana)',g:'nuclear'},
+  {nome:'Matheus',rel:'Neto — 21/04/2016',g:'netos'},
+  {nome:'Laura',rel:'Neta — 22/07/2019',g:'netos'},
+  {nome:'Giulia',rel:'Neta — 18/12/2021',g:'netos'},
+  {nome:'Maitê',rel:'Neta — 05/08/2024',g:'netos'},
+  {nome:'Arthur',rel:'Neto — 03/08/2025',g:'netos'},
+  {nome:'Neuza',rel:'Mãe de Celso',g:'celso'},
+  {nome:'Eduardo e família',rel:'Irmão de Celso',g:'celso'},
+  {nome:'Ciça e família',rel:'Irmã de Celso',g:'celso'},
+  {nome:'Neyde',rel:'Mãe da Selma (sogra)',g:'selma'},
+  {nome:'Família da Selma',rel:'Família da esposa',g:'selma'},
+];
+// Dados de família mantidos aqui para referência — renderização no DASHBOARD_FAMILIAR.html
+</script>
+
+<!-- Modal edição de bloco base -->
+<div id="bloco-edit-overlay" onclick="if(event.target===this)fecharEditBloco()">
+  <div id="bloco-edit-box">
+    <h3>✏️ Editar Bloco</h3>
+    <div class="bef">
+      <label>Título</label>
+      <input id="bef-titulo" type="text" placeholder="Nome do bloco">
+    </div>
+    <div class="bef">
+      <label>Área</label>
+      <select id="bef-area">
+        <option>Devocional</option><option>Pessoal</option><option>Familiar</option>
+        <option>Financeiro</option><option>Profissional</option><option>Ministerial</option>
+        <option>Social</option><option>Geral</option>
+      </select>
+    </div>
+    <div class="bef-row">
+      <div class="bef"><label>Início</label><input id="bef-ini" type="time" step="1800"></div>
+      <div class="bef"><label>Fim</label><input id="bef-fim" type="time" step="1800"></div>
+    </div>
+    <div id="bloco-edit-btns">
+      <button id="bloco-edit-cancel" onclick="fecharEditBloco()">Cancelar</button>
+      <button id="bloco-edit-save" onclick="salvarEditBloco()">Salvar</button>
+    </div>
+  </div>
+</div>
+<script src="reminder.js"></script>
+</body>
+</html>

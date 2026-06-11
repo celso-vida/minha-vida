@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Área Pessoal — Celso</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-sync.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:#DBDBDB; --primary:#1A4168; --area:#3aaa6f; --white:#fff;
+  --border:#c0c8d0; --radius:14px; --shadow:0 4px 18px rgba(0,0,0,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--primary);min-height:100vh;padding:18px 14px 60px;}
+
+/* HEADER */
+header{display:flex;align-items:center;gap:14px;max-width:1100px;margin:0 auto 18px;flex-wrap:wrap;}
+.back-btn{background:var(--area);color:#fff;border:none;border-radius:9px;padding:7px 14px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
+.back-btn:hover{opacity:.85;}
+.header-title{font-family:'Caveat',cursive;font-size:2rem;font-weight:700;color:var(--primary);}
+.header-sub{font-size:.78rem;color:var(--primary);opacity:.55;margin-top:2px;}
+
+/* ABAS */
+.tabs{display:flex;gap:6px;max-width:1100px;margin:0 auto 18px;flex-wrap:wrap;}
+.tab{background:var(--white);border:2px solid var(--border);border-radius:10px;padding:8px 18px;font-size:.8rem;font-weight:700;cursor:pointer;color:var(--primary);font-family:inherit;transition:all .15s;}
+.tab:hover{background:#e8f5ee;border-color:var(--area);}
+.tab.active{background:var(--area);color:#fff;border-color:var(--area);}
+.tab-pane{display:none;max-width:1100px;margin:0 auto;}
+.tab-pane.active{display:block;}
+
+/* BLOCOS */
+.block{background:var(--white);border-radius:var(--radius);padding:18px 20px;margin-bottom:14px;border:1px solid var(--border);box-shadow:var(--shadow);}
+.block-title{font-size:.82rem;color:var(--primary);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--bg);display:flex;align-items:center;gap:7px;}
+.sec-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.13em;color:var(--primary);font-weight:700;opacity:.5;margin-bottom:6px;padding-left:2px;}
+
+/* INPUTS */
+.inp{background:#f0f4f8;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:.78rem;font-family:inherit;color:var(--primary);}
+.inp:focus{outline:none;border-color:var(--area);}
+.sel{background:#f0f4f8;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:.76rem;font-family:inherit;color:var(--primary);cursor:pointer;}
+.btn{background:var(--primary);color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn:hover{opacity:.85;}
+.btn-g{background:var(--area);}
+.btn-r{background:#ef4444;}
+.btn-sm{padding:3px 10px;font-size:.7rem;}
+
+/* CARDS INDICADORES */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:14px;}
+.kpi{background:#f0f4f8;border-radius:10px;padding:14px 12px;text-align:center;border:1px solid var(--border);}
+.kpi-val{font-size:1.6rem;font-weight:800;color:var(--primary);line-height:1;}
+.kpi-lbl{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;opacity:.55;margin-top:4px;}
+.kpi-sub{font-size:.68rem;color:var(--area);font-weight:600;margin-top:2px;}
+.kpi.verde .kpi-val{color:#16a34a;}
+.kpi.amarelo .kpi-val{color:#ca8a04;}
+.kpi.vermelho .kpi-val{color:#dc2626;}
+
+/* TABELAS */
+.tbl{width:100%;border-collapse:collapse;font-size:.78rem;}
+.tbl th{background:#f0f4f8;padding:7px 10px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;opacity:.6;font-weight:700;}
+.tbl td{padding:7px 10px;border-top:1px solid var(--bg);}
+.tbl tr:hover td{background:#f8fafc;}
+
+/* LISTA ITEMS */
+.item-row{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;margin-bottom:6px;background:#f5f7fa;border:1px solid var(--border);font-size:.78rem;flex-wrap:wrap;}
+.item-row .nome{flex:1;font-weight:600;}
+.item-row .det{opacity:.6;font-size:.72rem;}
+.del-btn{background:rgba(239,68,68,.12);border:none;border-radius:5px;padding:2px 8px;font-size:.7rem;color:#dc2626;cursor:pointer;font-family:inherit;}
+.del-btn:hover{background:rgba(239,68,68,.25);}
+
+/* CHECKLIST */
+.check-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;margin-bottom:5px;background:#f5f7fa;border:1px solid var(--border);}
+.check-item input[type=checkbox]{width:16px;height:16px;accent-color:var(--area);cursor:pointer;flex-shrink:0;}
+.check-item label{flex:1;font-size:.78rem;cursor:pointer;}
+.check-item label.done{text-decoration:line-through;opacity:.4;}
+.check-freq{font-size:.65rem;background:#e8f5ee;color:var(--area);padding:2px 8px;border-radius:20px;font-weight:700;white-space:nowrap;}
+
+/* PROGRESSO */
+.prog-bar-wrap{background:#e2e8f0;border-radius:20px;height:10px;overflow:hidden;flex:1;}
+.prog-bar{height:100%;border-radius:20px;background:var(--area);transition:width .4s;}
+.prog-bar.vermelho{background:#ef4444;}
+.prog-bar.amarelo{background:#eab308;}
+
+/* PDF VIEWER */
+.pdf-viewer{width:100%;height:500px;border:1px solid var(--border);border-radius:10px;background:#f5f7fa;}
+
+/* TREINO DOTS */
+.semana-dots{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap;}
+.dia-dot{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.62rem;font-weight:700;text-transform:uppercase;opacity:.5;}
+.dia-dot .dot{width:32px;height:32px;border-radius:50%;background:#e2e8f0;border:2px solid #d1d5db;display:flex;align-items:center;justify-content:center;font-size:.85rem;}
+.dia-dot.treinou{opacity:1;}
+.dia-dot.treinou .dot{background:#22c55e;border-color:#16a34a;color:#fff;}
+.dia-dot.hoje-dot .dot{border-color:var(--primary);border-width:3px;}
+
+/* FORM */
+.form-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:10px;}
+.form-row .inp,.form-row .sel{flex:1;min-width:100px;}
+.form-group{display:flex;flex-direction:column;gap:4px;flex:1;min-width:100px;}
+.form-label{font-size:.7rem;font-weight:700;opacity:.55;text-transform:uppercase;letter-spacing:.06em;}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:700;white-space:nowrap;}
+.badge-g{background:#dcfce7;color:#15803d;}
+.badge-a{background:#fef9c3;color:#854d0e;}
+.badge-r{background:#fee2e2;color:#991b1b;}
+.badge-b{background:#dbeafe;color:#1e40af;}
+
+@media(max-width:600px){.kpi-row{grid-template-columns:repeat(2,1fr);}.form-row{flex-direction:column;}}
+
+/* ── FOTO DA ÁREA ─────────────────────────────────── */
+.area-foto-wrap{
+  flex-shrink:0; cursor:pointer; position:relative;
+  border-radius:14px; overflow:hidden;
+  border:2px solid var(--border);
+  box-shadow:0 4px 16px rgba(0,0,0,.13);
+  transition:transform .2s, box-shadow .2s;
+  width:210px; height:130px;
+  background:var(--area);
+}
+.area-foto-wrap:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.18);}
+.area-foto-wrap:hover .area-foto-overlay{opacity:1;}
+.area-foto-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;border-radius:12px;z-index:1;}
+.area-foto-placeholder{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  z-index:0;
+}
+.area-foto-placeholder-icon{font-size:2.2rem;opacity:.45;}
+.area-foto-placeholder-txt{font-size:.7rem;font-weight:700;color:#fff;opacity:.55;text-transform:uppercase;letter-spacing:.08em;}
+.area-foto-overlay{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,.48);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s;
+  border-radius:12px;
+  z-index:2;
+}
+.area-foto-overlay span{
+  color:#fff;font-size:.78rem;font-weight:700;
+  background:rgba(255,255,255,.18);
+  padding:6px 14px;border-radius:20px;
+  border:1px solid rgba(255,255,255,.3);
+}
+@media(max-width:600px){.area-foto-wrap{width:100%;height:100px;}}
+
+</style>
+
+<script>
+(function(){
+  var src=localStorage.getItem('foto_perfil');
+  if(!src)return;
+  var lnk=document.querySelector('link[rel~="icon"]');
+  if(!lnk){lnk=document.createElement('link');lnk.rel='icon';document.head.appendChild(lnk);}
+  lnk.href=src;
+})();
+</script>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <a class="back-btn" href="DASHBOARD_GERAL.html">← Painel Geral</a>
+  <div>
+    <div class="header-title">Pessoal — Celso</div>
+    <div class="header-sub" id="data-hoje"></div>
+  </div>
+  <div class="area-foto-wrap" onclick="document.getElementById('af-input').click()" title="Clique para adicionar ou trocar a foto">
+    <img id="af-img" class="area-foto-img" src="" alt="Foto da área">
+    <div id="af-ph" class="area-foto-placeholder">
+      <div class="area-foto-placeholder-icon">👤</div>
+      <div class="area-foto-placeholder-txt">Adicionar foto</div>
+    </div>
+    <div class="area-foto-overlay"><span>📷 Trocar foto</span></div>
+    <input type="file" id="af-input" accept="image/*" style="display:none" onchange="loadAreaFoto(this)">
+  </div>
+</header>
+
+<!-- ABAS -->
+<div class="tabs">
+  <button class="tab active" onclick="abrirAba('saude',this)">🏥 Saúde</button>
+  <button class="tab" onclick="abrirAba('estetica',this)">✨ Estética</button>
+  <button class="tab" onclick="abrirAba('estudos',this)">📚 Estudos</button>
+  <button class="tab" onclick="abrirAba('esporte',this)">🏃 Esporte</button>
+  <button class="tab" onclick="abrirAba('lazer',this)">🌴 Lazer</button>
+  <button class="tab" onclick="abrirAba('nutricao',this)">🥗 Nutrição</button>
+</div>
+
+<!-- ══ ABA SAÚDE ════════════════════════════════════════ -->
+<div class="tab-pane active" id="pane-saude">
+
+  <div class="kpi-row" id="kpi-saude"></div>
+
+  <!-- PESO -->
+  <div class="block">
+    <div class="block-title">⚖️ Controle de Peso</div>
+    <canvas id="grafico-peso" height="90"></canvas>
+    <div class="form-row" style="margin-top:14px;">
+      <div class="form-group"><span class="form-label">Data</span><input class="inp" id="peso-data" type="date"></div>
+      <div class="form-group"><span class="form-label">Peso (kg)</span><input class="inp" id="peso-val" type="number" step="0.1" placeholder="ex: 82.5" style="max-width:110px"></div>
+      <div class="form-group"><span class="form-label">Obs.</span><input class="inp" id="peso-obs" type="text" placeholder="Observação opcional"></div>
+      <button class="btn btn-g" style="align-self:flex-end" onclick="addPeso()">+ Registrar</button>
+    </div>
+    <div style="margin-top:14px;padding-top:12px;border-top:2px solid var(--bg);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <span style="font-size:.78rem;font-weight:700;">🎯 Meta:</span>
+      <input class="inp" id="meta-peso" type="number" step="0.1" placeholder="kg" style="width:90px">
+      <button class="btn btn-sm" onclick="salvarMetaPeso()">Salvar meta</button>
+      <span id="meta-peso-prog" style="flex:1;min-width:160px;font-size:.78rem;"></span>
+    </div>
+    <div style="margin-top:14px;">
+      <div class="sec-label">Histórico de Registros</div>
+      <div id="peso-lista" style="max-height:180px;overflow-y:auto;"></div>
+    </div>
+  </div>
+
+  <!-- MEDIDAS -->
+  <div class="block">
+    <div class="block-title">📊 Medidas & Indicadores</div>
+    <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead><tr><th>Data</th><th>Pressão</th><th>Glicose</th><th>Cintura</th><th>Obs.</th><th></th></tr></thead>
+        <tbody id="medidas-body"></tbody>
+      </table>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><span class="form-label">Data</span><input class="inp" id="med-data" type="date"></div>
+      <div class="form-group"><span class="form-label">Pressão</span><input class="inp" id="med-press" type="text" placeholder="120/80" style="max-width:90px"></div>
+      <div class="form-group"><span class="form-label">Glicose (mg/dL)</span><input class="inp" id="med-glic" type="number" placeholder="95" style="max-width:100px"></div>
+      <div class="form-group"><span class="form-label">Cintura (cm)</span><input class="inp" id="med-cin" type="number" placeholder="90" style="max-width:90px"></div>
+      <div class="form-group"><span class="form-label">Obs.</span><input class="inp" id="med-obs" type="text" placeholder="Observação"></div>
+      <button class="btn btn-g" style="align-self:flex-end" onclick="addMedida()">+ Adicionar</button>
+    </div>
+  </div>
+
+  <!-- MEDICAMENTOS -->
+  <div class="block">
+    <div class="block-title">💊 Medicamentos</div>
+    <div id="meds-lista"></div>
+    <div class="form-row">
+      <div class="form-group"><span class="form-label">Medicamento</span><input class="inp" id="med-nome" type="text" placeholder="Nome"></div>
+      <div class="form-group"><span class="form-label">Dose</span><input class="inp" id="med-dose" type="text" placeholder="10mg" style="max-width:90px"></div>
+      <div class="form-group"><span class="form-label">Horário(s)</span><input class="inp" id="med-hora" type="text" placeholder="08:00 e 20:00"></div>
+      <div class="form-group"><span class="form-label">Frequência</span>
+        <select class="sel" id="med-freq"><option>Diário</option><option>Em dias alternados</option><option>Semanal</option><option>Mensal</option><option>Contínuo</option></select>
+      </div>
+      <div class="form-group"><span class="form-label">Obs.</span><input class="inp" id="med-obs2" type="text" placeholder="Indicação / médico"></div>
+      <button class="btn btn-g" style="align-self:flex-end" onclick="addMed()">+ Adicionar</button>
+    </div>
+  </div>
+
+  <!-- CONSULTAS -->
+  <div class="block">
+    <div class="block-title">🩺 Consultas Médicas</div>
+    <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead><tr><th>Data</th><th>Especialidade</th><th>Médico</th><th>Status</th><th>Obs.</th><th></th></tr></thead>
+        <tbody id="consultas-body"></tbody>
+      </table>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><span class="form-label">Data</span><input class="inp" id="cons-data" type="date"></div>
+      <div class="form-group"><span class="form-label">Especialidade</span><input class="inp" id="cons-esp" type="text" placeholder="Cardiologista"></div>
+      <div class="form-group"><span class="form-label">Médico</span><input class="inp" id="cons-med" type="text" placeholder="Nome do médico"></div>
+      <div class="form-group"><span class="form-label">Status</span>
+        <select class="sel" id="cons-status"><option value="agendado">Agendado</option><option value="realizado">Realizado</option><option value="cancelado">Cancelado</option></select>
+      </div>
+      <div class="form-group"><span class="form-label">Obs.</span><input class="inp" id="cons-obs" type="text" placeholder="Observações"></div>
+      <button class="btn btn-g" style="align-self:flex-end" onclick="addConsulta()">+ Adicionar</button>
+    </div>
+  </div>
+
+  <!-- EXAMES -->
+  <div class="block">
+    <div class="block-title">🔬 Exames</div>
+    <div id="exames-lista" style="margin-bottom:12px;"></div>
+    <div class="form-row" style="margin-bottom:14px;">
+      <div class="form-group"><span class="form-label">Data</span><input class="inp" id="ex-data" type="date"></div>
+      <div class="form-group"><span class="form-label">Tipo de Exame</span><input class="inp" id="ex-tipo" type="text" placeholder="Hemograma completo"></div>
+      <div class="form-group"><span class="form-label">Laboratório</span><input class="inp" id="ex-lab" type="text" placeholder="Nome do laboratório"></div>
+      <div class="form-group"><span class="form-label">Arquivo PDF</span><input class="inp" id="ex-file" type="file" accept=".pdf" style="padding:4px 6px;"></div>
+      <div class="form-group"><span class="form-label">Obs. / Resultado</span><input class="inp" id="ex-obs" type="text" placeholder="Resultado resumido"></div>
+      <button class="btn btn-g" style="align-self:flex-end" onclick="addExame()">+ Adicionar</button>
+    </div>
+    <div id="pdf-viewer-wrap" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span id="pdf-titulo" style="font-size:.8rem;font-weight:700;"></span>
+        <button class="btn btn-sm btn-r" onclick="fecharPdf()">✕ Fechar</button>
+      </div>
+      <iframe id="pdf-frame" class="pdf-viewer"></iframe>
+    </div>
+  </div>
+
+</div><!-- /pane-saude -->
+
+<!-- ══ ABA ESTÉTICA ═════════════════════════════════════ -->
+<div class="tab-pane" id="pane-estetica">
+
+  <div class="block">
+    <div class="block-title">🪞 Checklist de Cuidados</div>
+    <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
+      <button class="btn btn-sm btn-g" onclick="marcarTodos()">✓ Marcar todos</button>
+      <button class="btn btn-sm" onclick="desmarcarTodos()">↺ Desmarcar todos</button>
+      <span id="check-prog-txt" style="font-size:.78rem;opacity:.6;"></span>
+    </div>
+    <div id="checklist-wrap"></div>
+    <div class="form-row" style="margin-top:12px;padding-top:10px;border-top:2px solid var(--bg);">
+      <div class="form-group"><span class="form-label">Novo cuidado</span><input class="inp" id="ck-nome" type="text" placeholder="ex: Aplicar protetor solar"></div>
+      <div class="form-group"><span class="form-label">Frequência</span>
+        <select class="sel" id="ck-freq"><option>Diário</option><option>Dias de semana</option><option>Semanal</option><option>Quinzenal</option><option>Mensal</option></select>
+      </div>
+      <button class="btn btn-g" style="align-self:flex-end" onclick="addCheck()">+ Adicionar</button>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">📋 Profissionais</div>
+    <div id="profissionais-lista"></div>
+    <div class="form-row">
+      <div class="form-group"><span class="form-label">Especialidade</span><input class="inp" id="pf-esp" type="text" placeholder="Barbeiro"></div>
+      <div class="form-group"><span class="form-label">Nome</span><input class="inp" id="pf-nome" type="text" placeholder="Nome"></div>
+      <div class="form-group"><span class="form-label">Contato</span><input class="inp" id="pf-cont" type="text" placeholder="Tel / Instagram"></div>
+      <div class="form-group"><span class="form-label">Última visita</span><input class="inp" id="pf-ult" type="date"></div>
+      <div class="form-group"><span class="form-label">Próxima visita</span><input class="inp" id="pf-prox" type="date"></div>
+      <button class="btn btn-g" style="align-self:flex-end" onclick="addProfissional()">+ Adicionar</button>
+    </div>
+  </div>
+
+</div><!-- /pane-estetica -->
+
+<!-- ══ ABA ESTUDOS ══════════════════════════════════════ -->
+<div class="tab-pane" id="pane-estudos">
+
+  <div class="block">
+    <div class="block-title">📖 Em Andamento</div>
+    <div id="estudos-andamento"></div>
+    <div class="form-row">
+      <div class="form-group"><span class="form-label">Tipo</span>
+        <select class="sel" id="est-tipo"><option>Livro</option><option>Curso</option><option>Podcast</option><option>Vídeo</option><option>Artigo</option></select>
+      </div>
+      <div class="form-group"><span class="form-label">Título</span><input class="inp" id="est-titulo" type="text" placeholder="Nome do livro / curso"></div>
+      <div class="form-group"><span class="form-label">Autor / Instituição</span><input class="inp" id="est-autor" type="text" placeholder="Autor ou plataforma"></div>
+      <div class="form-group"><span class="form-label">Progresso %</span><input class="inp" id="est-prog" type="number" min="0" max="100" placeholder="0–100" style="max-width:80px"></div>
+      <div class="form-group"><span class="form-label">Meta conclusão</span><input class="inp" id="est-meta" type="date"></div>
+      <button class="btn btn-g" style="align-self:flex-end" onclick="addEstudo()">+ Adicionar</button>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">📚 Biblioteca Pessoal</div>
+    <div id="biblioteca-lista"></div>
+    <div class="form-row">
+      <div class="form-group"><span class="form-label">Tipo</span>
+        <select class="sel" id="bib-tipo"><option>Livro</option><option>Curso</option><option>Outro</option></select>
+      </div>
+      <div class="form-group"><span class="form-label">Título</span><input class="inp" id="bib-titulo" type="text" placeholder="Título"></div>
+      <div class="form-group"><span class="form-label">Autor</span><input class="inp" id="bib-autor" type="text" placeholder="Autor"></div>
+      <div class="form-group"><span class="form-label">Concluído em</span><input class="inp" id="bib-data" type="date"></div>
+      <div class="form-group"><span class="form-label">Avaliação</span>
+        <select class="sel" id="bib-stars"><option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="3">⭐⭐⭐</option><option value="2">⭐⭐</option><option value="1">⭐</option></select>
+      </div>
+      <div class="form-group"><span class="form-label">Obs.</span><input class="inp" id="bib-obs" type="text" placeholder="Resumo / impressão"></div>
+      <button class="btn btn-g" style="align-self:flex-end" onclick="addBiblioteca()">+ Adicionar</button>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">🎯 Metas de Estudo Semanal</div>
+    <div id="metas-estudo-lista"></div>
+    <div class="form-row">
+      <div class="form-group"><span class="form-label">Tema</span><input class="inp" id="me-tema" type="text" placeholder="ex: Teologia Reformada"></div>
+      <div class="form-group"><span class="form-label">Meta (h/semana)</span><input class="inp" id="me-horas" type="number" min="1" placeholder="horas" style="max-width:90px"></div>
+      <div class="form-group"><span class="form-label">Realizado (h)</span><input class="inp" id="me-feito" type="number" min="0" placeholder="0" style="max-width:90px"></div>
+      <button class="btn btn-g" style="align-self:flex-end" onclick="addMetaEstudo()">+ Adicionar</button>
+    </div>
+  </div>
+
+</div><!-- /pane-estudos -->
+
+<!-- ══ ABA ESPORTE ══════════════════════════════════════ -->
+<div class="tab-pane" id="pane-esporte">
+
+  <div class="block">
+    <div class="block-title">📅 Semana Atual</div>
+    <div class="semana-dots" id="semana-dots"></div>
+    <div id="semana-resumo" style="font-size:.8rem;margin-top:6px;opacity:.7;"></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">🎯 Metas de Treino</div>
+    <div class="form-row" style="margin-bottom:12px;">
+      <div class="form-group"><span class="form-label">Dias/semana</span><input class="inp" id="meta-dias" type="number" min="1" max="7" placeholder="4" style="max-width:80px"></div>
+      <div class="form-group"><span class="form-label">Atividade principal</span><input class="inp" id="meta-ativ" type="text" placeholder="Caminhada, Academia..."></div>
+      <button class="btn btn-g" style="align-self:flex-end" onclick="salvarMetaTreino()">Salvar metas</button>
+    </div>
+    <div id="meta-treino-display"></div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">🏋️ Registro de Treinos</div>
+    <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead><tr><th>Data</th><th>Atividade</th><th>Duração</th><th>Intensidade</th><th>Obs.</th><th></th></tr></thead>
+        <tbody id="treinos-body"></tbody>
+      </table>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><span class="form-label">Data</span><input class="inp" id="tr-data" type="date"></div>
+      <div class="form-group"><span class="form-label">Atividade</span><input class="inp" id="tr-ativ" type="text" placeholder="Caminhada, Natação..."></div>
+      <div class="form-group"><span class="form-label">Duração</span><input class="inp" id="tr-dur" type="text" placeholder="45min" style="max-width:90px"></div>
+      <div class="form-group"><span class="form-label">Intensidade</span>
+        <select class="sel" id="tr-int"><option>Leve</option><option>Moderada</option><option>Intensa</option></select>
+      </div>
+      <div class="form-group"><span class="form-label">Obs.</span><input class="inp" id="tr-obs" type="text" placeholder="Observações"></div>
+      <button class="btn btn-g" style="align-self:flex-end" onclick="addTreino()">+ Registrar</button>
+    </div>
+  </div>
+
+</div><!-- /pane-esporte -->
+
+<!-- ══ ABA LAZER ════════════════════════════════════════ -->
+<div class="tab-pane" id="pane-lazer">
+
+  <div class="block">
+    <div class="block-title">🌟 Lista de Desejos</div>
+    <div id="desejos-lista"></div>
+    <div class="form-row">
+      <div class="form-group"><span class="form-label">Categoria</span>
+        <select class="sel" id="des-cat"><option>Viagem</option><option>Restaurante</option><option>Atividade</option><option>Evento</option><option>Compra</option><option>Outro</option></select>
+      </div>
+      <div class="form-group" style="flex:2"><span class="form-label">O que você quer fazer/ver/visitar</span><input class="inp" id="des-txt" type="text" placeholder="Descrição"></div>
+      <div class="form-group"><span class="form-label">Prioridade</span>
+        <select class="sel" id="des-prior"><option value="alta">Alta 🔴</option><option value="media" selected>Média 🟡</option><option value="baixa">Baixa 🟢</option></select>
+      </div>
+      <div class="form-group"><span class="form-label">Prazo</span><input class="inp" id="des-prazo" type="date"></div>
+      <button class="btn btn-g" style="align-self:flex-end" onclick="addDesejo()">+ Adicionar</button>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">📷 Momentos Vividos</div>
+    <div id="momentos-lista"></div>
+    <div class="form-row">
+      <div class="form-group"><span class="form-label">Data</span><input class="inp" id="mom-data" type="date"></div>
+      <div class="form-group" style="flex:2"><span class="form-label">Título do momento</span><input class="inp" id="mom-titulo" type="text" placeholder="ex: Jantar com a família em Legnano"></div>
+      <div class="form-group"><span class="form-label">Categoria</span>
+        <select class="sel" id="mom-cat"><option>Família</option><option>Viagem</option><option>Gastronomia</option><option>Natureza</option><option>Cultura</option><option>Outro</option></select>
+      </div>
+      <div class="form-group" style="flex:2"><span class="form-label">Memória</span><input class="inp" id="mom-obs" type="text" placeholder="Breve descrição..."></div>
+      <button class="btn btn-g" style="align-self:flex-end" onclick="addMomento()">+ Registrar</button>
+    </div>
+  </div>
+
+</div><!-- /pane-lazer -->
+
+<!-- ══ ABA NUTRIÇÃO ═════════════════════════════════════ -->
+<div class="tab-pane" id="pane-nutricao">
+
+  <div class="kpi-row" id="kpi-nutricao"></div>
+
+  <!-- METAS NUTRICIONAIS -->
+  <div class="block">
+    <div class="block-title">🎯 Metas Nutricionais</div>
+    <div class="form-row" style="margin-bottom:10px;">
+      <div class="form-group"><span class="form-label">Calorias/dia (meta)</span><input class="inp" id="nut-kcal-meta" type="number" placeholder="ex: 2000" style="max-width:120px"></div>
+      <div class="form-group"><span class="form-label">Água/dia (meta em L)</span><input class="inp" id="nut-agua-meta" type="number" step="0.1" placeholder="ex: 2.5" style="max-width:120px"></div>
+      <div class="form-group"><span class="form-label">Refeições/dia (meta)</span><input class="inp" id="nut-refeicoes-meta" type="number" placeholder="ex: 5" style="max-width:120px"></div>
+      <button class="btn btn-g" style="align-self:flex-end" onclick="salvarMetasNut()">Salvar metas</button>
+    </div>
+    <div id="nut-metas-display"></div>
+  </div>
+
+  <!-- REGISTRO DIÁRIO -->
+  <div class="block">
+    <div class="block-title">📋 Registro do Dia — <span id="nut-data-label" style="font-weight:400;font-size:.85rem;text-transform:none;letter-spacing:0;opacity:.6;"></span>
+      <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
+        <input class="inp" id="nut-dia-sel" type="date" style="font-size:.72rem;padding:4px 8px;" onchange="renderRegistroDia()">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:14px;" id="nut-dia-kpis"></div>
+    <!-- Refeições do dia -->
+    <div id="nut-refeicoes-dia"></div>
+    <!-- Adicionar refeição -->
+    <div style="margin-top:12px;padding-top:10px;border-top:2px solid var(--bg);">
+      <div class="form-row">
+        <div class="form-group"><span class="form-label">Refeição</span>
+          <select class="sel" id="nut-tipo-ref">
+            <option>Café da manhã</option><option>Lanche manhã</option><option>Almoço</option>
+            <option>Lanche tarde</option><option>Jantar</option><option>Ceia</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:2"><span class="form-label">O que comeu</span><input class="inp" id="nut-alimento" type="text" placeholder="Descreva a refeição..."></div>
+        <div class="form-group"><span class="form-label">Kcal (aprox.)</span><input class="inp" id="nut-kcal" type="number" placeholder="ex: 350" style="max-width:90px"></div>
+        <div class="form-group"><span class="form-label">Água (ml)</span><input class="inp" id="nut-agua" type="number" placeholder="ex: 300" style="max-width:90px"></div>
+        <div class="form-group"><span class="form-label">Avaliação</span>
+          <select class="sel" id="nut-aval"><option value="ótimo">😊 Ótimo</option><option value="bom" selected>🙂 Bom</option><option value="regular">😐 Regular</option><option value="ruim">😕 Ruim</option></select>
+        </div>
+        <button class="btn btn-g" style="align-self:flex-end" onclick="addRefeicao()">+ Registrar</button>
+      </div>
+    </div>
+    <!-- Água rápida -->
+    <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--bg);display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <span style="font-size:.75rem;font-weight:700;">💧 Água rápida:</span>
+      <button class="btn btn-sm btn-g" onclick="addAgua(200)">+200ml</button>
+      <button class="btn btn-sm btn-g" onclick="addAgua(300)">+300ml</button>
+      <button class="btn btn-sm btn-g" onclick="addAgua(500)">+500ml</button>
+      <span id="nut-agua-total-txt" style="font-size:.78rem;opacity:.6;"></span>
+    </div>
+  </div>
+
+  <!-- RESTRIÇÕES & PREFERÊNCIAS -->
+  <div class="block">
+    <div class="block-title">⚠️ Restrições & Preferências</div>
+    <div id="nut-restricoes-lista"></div>
+    <div class="form-row">
+      <div class="form-group"><span class="form-label">Item</span><input class="inp" id="nut-rest-item" type="text" placeholder="ex: Glúten, Lactose, Açúcar..."></div>
+      <div class="form-group"><span class="form-label">Tipo</span>
+        <select class="sel" id="nut-rest-tipo"><option>Restrição médica</option><option>Intolerância</option><option>Preferência pessoal</option><option>Dieta</option></select>
+      </div>
+      <div class="form-group"><span class="form-label">Obs.</span><input class="inp" id="nut-rest-obs" type="text" placeholder="Observação"></div>
+      <button class="btn btn-g" style="align-self:flex-end" onclick="addRestricao()">+ Adicionar</button>
+    </div>
+  </div>
+
+  <!-- HISTÓRICO SEMANAL -->
+  <div class="block">
+    <div class="block-title">📈 Histórico — Últimos 7 dias</div>
+    <div id="nut-historico"></div>
+  </div>
+
+</div><!-- /pane-nutricao -->
+
+<!-- ═══════════════════ SCRIPTS ══════════════════════════ -->
+<script>
+'use strict';
+
+const ALTURA = 1.80;
+const hoje = new Date();
+const dtStr = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const hojeStr = dtStr(hoje);
+const fmtData = s => { if(!s) return ''; const [y,m,d]=s.split('-'); return `${d}/${m}/${y}`; };
+const ls  = (k,def) => { try{ const v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch{return def;} };
+const lss = (k,v)   => localStorage.setItem(k, JSON.stringify(v));
+const empty = msg => `<div style="font-size:.78rem;color:#aaa;font-style:italic;padding:6px 0">${msg}</div>`;
+
+document.getElementById('data-hoje').textContent =
+  hoje.toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+// ── ABAS ─────────────────────────────────────────────
+function abrirAba(id,btn){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='saude') renderGraficoPeso();
+  if(id==='esporte') renderSemana();
+  if(id==='nutricao') abrirAbaNutricao();
+}
+
+// ══ SAÚDE ════════════════════════════════════════════
+
+function calcIMC(p){ return p/(ALTURA*ALTURA); }
+function classIMC(imc){
+  if(imc<18.5) return {cls:'vermelho',txt:'Abaixo do peso'};
+  if(imc<25)   return {cls:'verde',   txt:'Peso normal'};
+  if(imc<30)   return {cls:'amarelo', txt:'Sobrepeso'};
+  return           {cls:'vermelho',txt:'Obesidade'};
+}
+function renderKPIs(){
+  const pesos=ls('peso_reg',[]);
+  const ult=pesos.length?pesos[pesos.length-1]:null;
+  const meta=ls('meta_peso',null);
+  let html='';
+  if(ult){
+    const imc=calcIMC(ult.val), cl=classIMC(imc);
+    html+=`<div class="kpi ${cl.cls}">
+      <div class="kpi-val">${ult.val}<span style="font-size:.9rem"> kg</span></div>
+      <div class="kpi-lbl">Último Peso</div>
+      <div class="kpi-sub">${fmtData(ult.data)}</div>
+    </div>
+    <div class="kpi ${cl.cls}">
+      <div class="kpi-val">${imc.toFixed(1)}</div>
+      <div class="kpi-lbl">IMC</div>
+      <div class="kpi-sub">${cl.txt}</div>
+    </div>`;
+    if(meta){
+      const diff=(ult.val-meta).toFixed(1);
+      const ok=parseFloat(diff)<=0;
+      html+=`<div class="kpi ${ok?'verde':'amarelo'}">
+        <div class="kpi-val">${meta}<span style="font-size:.9rem"> kg</span></div>
+        <div class="kpi-lbl">Meta de Peso</div>
+        <div class="kpi-sub">${ok?'✅ Atingida!':'Faltam '+Math.abs(diff)+' kg'}</div>
+      </div>`;
+    }
+  } else {
+    html+=`<div class="kpi"><div class="kpi-val" style="font-size:1rem;color:#aaa">--</div><div class="kpi-lbl">Registre seu peso</div></div>`;
+  }
+  const treinos=ls('treinos',[]);
+  const si=new Date(hoje); si.setDate(hoje.getDate()-hoje.getDay());
+  const tsem=treinos.filter(t=>{const d=new Date(t.data+'T12:00:00');return d>=si&&d<=hoje;}).length;
+  html+=`<div class="kpi ${tsem>=3?'verde':tsem>=1?'amarelo':'vermelho'}">
+    <div class="kpi-val">${tsem}</div>
+    <div class="kpi-lbl">Treinos esta semana</div>
+    <div class="kpi-sub">${tsem>=3?'Ótimo ritmo! 💪':tsem>=1?'Continue!':'Bora treinar!'}</div>
+  </div>`;
+  const estudos=ls('estudos_and',[]);
+  html+=`<div class="kpi">
+    <div class="kpi-val">${estudos.length}</div>
+    <div class="kpi-lbl">Estudos ativos</div>
+    <div class="kpi-sub">${estudos.length?'Em andamento':'Nenhum'}</div>
+  </div>`;
+  document.getElementById('kpi-saude').innerHTML=html;
+}
+
+// ── GRÁFICO DE PESO ─────────────────────────────────
+let pesoChart=null;
+function renderGraficoPeso(){
+  const pesos=ls('peso_reg',[]);
+  const meta=ls('meta_peso',null);
+  const ctx=document.getElementById('grafico-peso').getContext('2d');
+  if(pesoChart) pesoChart.destroy();
+  const labels=pesos.map(p=>fmtData(p.data));
+  const vals=pesos.map(p=>p.val);
+  pesoChart=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {label:'Peso (kg)',data:vals,borderColor:'#3aaa6f',backgroundColor:'rgba(58,170,111,.10)',
+         borderWidth:3,pointBackgroundColor:'#3aaa6f',pointRadius:5,tension:.35,fill:true},
+        ...(meta&&vals.length?[{label:'Meta ('+meta+' kg)',data:Array(vals.length).fill(meta),
+         borderColor:'#f59e0b',borderWidth:2,borderDash:[6,4],pointRadius:0,fill:false}]:[])
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{position:'top',labels:{font:{size:11}}}},
+      scales:{
+        y:{min:vals.length?Math.min(...vals,(meta||999))-3:undefined,
+           max:vals.length?Math.max(...vals,(meta||0))+3:undefined,
+           ticks:{font:{size:11}},title:{display:true,text:'kg',font:{size:11}}},
+        x:{ticks:{font:{size:11}}}
+      }
+    }
+  });
+}
+document.getElementById('peso-data').value=hojeStr;
+function addPeso(){
+  const val=parseFloat(document.getElementById('peso-val').value);
+  const data=document.getElementById('peso-data').value;
+  if(!val||!data){alert('Informe data e peso.');return;}
+  const list=ls('peso_reg',[]);
+  list.push({val,data,obs:document.getElementById('peso-obs').value.trim()});
+  list.sort((a,b)=>a.data.localeCompare(b.data));
+  lss('peso_reg',list);
+  document.getElementById('peso-val').value='';
+  document.getElementById('peso-obs').value='';
+  renderPesoLista();renderGraficoPeso();renderKPIs();renderMetaPesoBar();
+}
+function delPeso(i){const l=ls('peso_reg',[]);l.splice(i,1);lss('peso_reg',l);renderPesoLista();renderGraficoPeso();renderKPIs();renderMetaPesoBar();}
+function renderPesoLista(){
+  const list=[...ls('peso_reg',[])].reverse();
+  const el=document.getElementById('peso-lista');
+  if(!list.length){el.innerHTML=empty('Nenhum peso registrado ainda.');return;}
+  const orig=ls('peso_reg',[]);
+  el.innerHTML='<table class="tbl"><thead><tr><th>Data</th><th>Peso</th><th>IMC</th><th>Obs.</th><th></th></tr></thead><tbody>'+
+    list.map((p)=>{
+      const imc=calcIMC(p.val),cl=classIMC(imc);
+      const ri=orig.findIndex(o=>o.data===p.data&&o.val===p.val);
+      return `<tr><td>${fmtData(p.data)}</td><td><strong>${p.val} kg</strong></td>
+        <td><span class="badge badge-${cl.cls==='verde'?'g':cl.cls==='amarelo'?'a':'r'}">${imc.toFixed(1)} — ${cl.txt}</span></td>
+        <td>${p.obs||'—'}</td>
+        <td><button class="del-btn" onclick="delPeso(${ri})">✕</button></td></tr>`;
+    }).join('')+'</tbody></table>';
+}
+function salvarMetaPeso(){
+  const v=parseFloat(document.getElementById('meta-peso').value);
+  if(!v) return;
+  lss('meta_peso',v);renderMetaPesoBar();renderGraficoPeso();renderKPIs();
+}
+function renderMetaPesoBar(){
+  const meta=ls('meta_peso',null);
+  const pesos=ls('peso_reg',[]);
+  document.getElementById('meta-peso').value=meta||'';
+  const el=document.getElementById('meta-peso-prog');
+  if(!meta||!pesos.length){el.innerHTML='';return;}
+  const ult=pesos[pesos.length-1].val;
+  const diff=(ult-meta).toFixed(1);
+  const ok=parseFloat(diff)<=0;
+  el.innerHTML=`<strong style="color:${ok?'#16a34a':'#ca8a04'}">${ok?'✅ Meta atingida! Peso atual: '+ult+' kg':'Peso atual: '+ult+' kg — Faltam '+Math.abs(diff)+' kg para a meta'}</strong>`;
+}
+
+// ── MEDIDAS ──────────────────────────────────────────
+document.getElementById('med-data').value=hojeStr;
+let medidas=ls('medidas',[]);
+function renderMedidas(){
+  const tbody=document.getElementById('medidas-body');
+  const sorted=[...medidas].sort((a,b)=>b.data.localeCompare(a.data));
+  if(!sorted.length){tbody.innerHTML=`<tr><td colspan="6" style="color:#aaa;font-style:italic;font-size:.76rem;padding:10px">Nenhum registro ainda.</td></tr>`;return;}
+  tbody.innerHTML=sorted.map(m=>`<tr>
+    <td>${fmtData(m.data)}</td><td>${m.press||'—'}</td>
+    <td>${m.glic?m.glic+' mg/dL':'—'}</td><td>${m.cin?m.cin+' cm':'—'}</td>
+    <td>${m.obs||'—'}</td>
+    <td><button class="del-btn" onclick="delMedida(${medidas.indexOf(m)})">✕</button></td>
+  </tr>`).join('');
+}
+function addMedida(){
+  const data=document.getElementById('med-data').value;if(!data) return;
+  medidas.push({data,press:document.getElementById('med-press').value,glic:document.getElementById('med-glic').value,cin:document.getElementById('med-cin').value,obs:document.getElementById('med-obs').value});
+  lss('medidas',medidas);renderMedidas();
+  ['med-press','med-glic','med-cin','med-obs'].forEach(id=>document.getElementById(id).value='');
+}
+function delMedida(i){medidas.splice(i,1);lss('medidas',medidas);renderMedidas();}
+
+// ── MEDICAMENTOS ─────────────────────────────────────
+let meds=ls('medicamentos',[]);
+function renderMeds(){
+  const el=document.getElementById('meds-lista');
+  if(!meds.length){el.innerHTML=empty('Nenhum medicamento cadastrado.');return;}
+  el.innerHTML=meds.map((m,i)=>`<div class="item-row">
+    <span style="font-size:1.2rem">💊</span>
+    <span class="nome">${m.nome} <span style="font-weight:400;opacity:.6;font-size:.72rem">${m.dose}</span></span>
+    <span class="det">⏰ ${m.hora}</span>
+    <span class="badge badge-b">${m.freq}</span>
+    <span class="det">${m.obs||''}</span>
+    <button class="del-btn" onclick="delMed(${i})">✕</button>
+  </div>`).join('');
+}
+function addMed(){
+  const nome=document.getElementById('med-nome').value.trim();if(!nome) return;
+  meds.push({nome,dose:document.getElementById('med-dose').value,hora:document.getElementById('med-hora').value,freq:document.getElementById('med-freq').value,obs:document.getElementById('med-obs2').value});
+  lss('medicamentos',meds);renderMeds();
+  ['med-nome','med-dose','med-hora','med-obs2'].forEach(id=>document.getElementById(id).value='');
+}
+function delMed(i){meds.splice(i,1);lss('medicamentos',meds);renderMeds();}
+
+// ── CONSULTAS ────────────────────────────────────────
+document.getElementById('cons-data').value=hojeStr;
+let consultas=ls('consultas',[]);
+function renderConsultas(){
+  const tbody=document.getElementById('consultas-body');
+  const sorted=[...consultas].sort((a,b)=>b.data.localeCompare(a.data));
+  if(!sorted.length){tbody.innerHTML=`<tr><td colspan="6" style="color:#aaa;font-style:italic;font-size:.76rem;padding:10px">Nenhuma consulta registrada.</td></tr>`;return;}
+  const sb={agendado:'badge-a',realizado:'badge-g',cancelado:'badge-r'};
+  tbody.innerHTML=sorted.map(c=>`<tr>
+    <td>${fmtData(c.data)}</td><td><strong>${c.esp}</strong></td><td>${c.med||'—'}</td>
+    <td><span class="badge ${sb[c.status]||'badge-b'}">${c.status}</span></td>
+    <td>${c.obs||'—'}</td>
+    <td><button class="del-btn" onclick="delConsulta(${consultas.indexOf(c)})">✕</button></td>
+  </tr>`).join('');
+}
+function addConsulta(){
+  const data=document.getElementById('cons-data').value,esp=document.getElementById('cons-esp').value.trim();
+  if(!data||!esp) return;
+  consultas.push({data,esp,med:document.getElementById('cons-med').value,status:document.getElementById('cons-status').value,obs:document.getElementById('cons-obs').value});
+  lss('consultas',consultas);renderConsultas();
+  ['cons-esp','cons-med','cons-obs'].forEach(id=>document.getElementById(id).value='');
+}
+function delConsulta(i){consultas.splice(i,1);lss('consultas',consultas);renderConsultas();}
+
+// ── EXAMES ────────────────────────────────────────────
+document.getElementById('ex-data').value=hojeStr;
+let exames=ls('exames',[]);
+function renderExames(){
+  const el=document.getElementById('exames-lista');
+  if(!exames.length){el.innerHTML=empty('Nenhum exame registrado.');return;}
+  const sorted=[...exames].sort((a,b)=>b.data.localeCompare(a.data));
+  el.innerHTML=sorted.map(e=>{
+    const ri=exames.indexOf(e);
+    return `<div class="item-row">
+      <span style="font-size:1.2rem">🔬</span>
+      <span class="nome">${e.tipo}</span>
+      <span class="det">${fmtData(e.data)}</span>
+      <span class="det">${e.lab||''}</span>
+      <span class="det" style="flex:1">${e.obs||''}</span>
+      ${e.pdf?`<button class="btn btn-sm btn-g" onclick="verPdf(${ri})">📄 Ver PDF</button>`:'<span class="badge badge-a">Sem PDF</span>'}
+      <button class="del-btn" onclick="delExame(${ri})">✕</button>
+    </div>`;
+  }).join('');
+}
+function addExame(){
+  const tipo=document.getElementById('ex-tipo').value.trim(),data=document.getElementById('ex-data').value;
+  if(!tipo||!data) return;
+  const fi=document.getElementById('ex-file'),file=fi.files[0];
+  const base={tipo,data,lab:document.getElementById('ex-lab').value,obs:document.getElementById('ex-obs').value};
+  if(file){
+    const r=new FileReader();
+    r.onload=e=>{exames.push({...base,pdf:e.target.result,pdfNome:file.name});lss('exames',exames);renderExames();};
+    r.readAsDataURL(file);
+  } else {
+    exames.push(base);lss('exames',exames);renderExames();
+  }
+  ['ex-tipo','ex-lab','ex-obs'].forEach(id=>document.getElementById(id).value='');fi.value='';
+}
+function delExame(i){exames.splice(i,1);lss('exames',exames);renderExames();}
+function verPdf(i){
+  const ex=exames[i];
+  document.getElementById('pdf-titulo').textContent=`📄 ${ex.tipo} — ${fmtData(ex.data)}`;
+  document.getElementById('pdf-frame').src=ex.pdf;
+  document.getElementById('pdf-viewer-wrap').style.display='block';
+  document.getElementById('pdf-viewer-wrap').scrollIntoView({behavior:'smooth'});
+}
+function fecharPdf(){document.getElementById('pdf-viewer-wrap').style.display='none';document.getElementById('pdf-frame').src='';}
+
+// ══ ESTÉTICA ═════════════════════════════════════════
+
+const CK_DEFAULT=[
+  {nome:'Escovação dos dentes',freq:'Diário',feito:false},
+  {nome:'Hidratante facial',freq:'Diário',feito:false},
+  {nome:'Protetor solar',freq:'Diário',feito:false},
+  {nome:'Barbear / aparar barba',freq:'Semanal',feito:false},
+  {nome:'Cortar cabelo',freq:'Mensal',feito:false},
+  {nome:'Cuidado com as unhas',freq:'Quinzenal',feito:false},
+];
+let checkItems=ls('check_estetica',CK_DEFAULT);
+function renderChecklist(){
+  const checked=checkItems.filter(c=>c.feito).length;
+  document.getElementById('check-prog-txt').textContent=`${checked} / ${checkItems.length} concluídos`;
+  document.getElementById('checklist-wrap').innerHTML=checkItems.map((c,i)=>`
+    <div class="check-item">
+      <input type="checkbox" id="ck${i}" ${c.feito?'checked':''} onchange="toggleCheck(${i})">
+      <label for="ck${i}" class="${c.feito?'done':''}">${c.nome}</label>
+      <span class="check-freq">${c.freq}</span>
+      <button class="del-btn" onclick="delCheck(${i})">✕</button>
+    </div>`).join('');
+}
+function toggleCheck(i){checkItems[i].feito=!checkItems[i].feito;lss('check_estetica',checkItems);renderChecklist();}
+function marcarTodos(){checkItems.forEach(c=>c.feito=true);lss('check_estetica',checkItems);renderChecklist();}
+function desmarcarTodos(){checkItems.forEach(c=>c.feito=false);lss('check_estetica',checkItems);renderChecklist();}
+function addCheck(){
+  const nome=document.getElementById('ck-nome').value.trim();if(!nome) return;
+  checkItems.push({nome,freq:document.getElementById('ck-freq').value,feito:false});
+  lss('check_estetica',checkItems);renderChecklist();document.getElementById('ck-nome').value='';
+}
+function delCheck(i){checkItems.splice(i,1);lss('check_estetica',checkItems);renderChecklist();}
+
+let profissionais=ls('profissionais',[]);
+function renderProfissionais(){
+  const el=document.getElementById('profissionais-lista');
+  if(!profissionais.length){el.innerHTML=empty('Nenhum profissional cadastrado.');return;}
+  el.innerHTML=profissionais.map((p,i)=>`<div class="item-row">
+    <span style="font-size:1.2rem">✂️</span>
+    <span class="nome">${p.esp} <span style="font-weight:400;opacity:.6;font-size:.72rem">— ${p.nome}</span></span>
+    <span class="det">📞 ${p.cont||'—'}</span>
+    <span class="det">Última: ${fmtData(p.ult)||'—'}</span>
+    <span class="det">Próxima: <strong>${fmtData(p.prox)||'—'}</strong></span>
+    <button class="del-btn" onclick="delProfissional(${i})">✕</button>
+  </div>`).join('');
+}
+function addProfissional(){
+  const esp=document.getElementById('pf-esp').value.trim();if(!esp) return;
+  profissionais.push({esp,nome:document.getElementById('pf-nome').value,cont:document.getElementById('pf-cont').value,ult:document.getElementById('pf-ult').value,prox:document.getElementById('pf-prox').value});
+  lss('profissionais',profissionais);renderProfissionais();
+  ['pf-esp','pf-nome','pf-cont','pf-ult','pf-prox'].forEach(id=>document.getElementById(id).value='');
+}
+function delProfissional(i){profissionais.splice(i,1);lss('profissionais',profissionais);renderProfissionais();}
+
+// ══ ESTUDOS ═════════════════════════════════════════
+
+let estudos=ls('estudos_and',[]);
+function renderEstudos(){
+  const el=document.getElementById('estudos-andamento');
+  if(!estudos.length){el.innerHTML=empty('Nenhum estudo em andamento.');return;}
+  el.innerHTML=estudos.map((e,i)=>{
+    const pct=Math.min(100,Math.max(0,parseInt(e.prog)||0));
+    const cor=pct>=80?'verde':pct>=40?'amarelo':'vermelho';
+    return `<div class="item-row" style="flex-direction:column;align-items:flex-start;gap:7px;">
+      <div style="display:flex;align-items:center;gap:8px;width:100%;flex-wrap:wrap;">
+        <span class="badge badge-b">${e.tipo}</span>
+        <span class="nome" style="flex:1">${e.titulo}</span>
+        <span class="det">${e.autor||''}</span>
+        ${e.meta?`<span class="det">📅 ${fmtData(e.meta)}</span>`:''}
+        <input type="number" class="inp" style="width:70px;padding:3px 8px;" value="${pct}" min="0" max="100"
+          onchange="atualizarProg(${i},this.value)"> <span class="det">%</span>
+        <button class="del-btn" onclick="delEstudo(${i})">✕</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;width:100%;">
+        <div class="prog-bar-wrap"><div class="prog-bar ${cor}" style="width:${pct}%"></div></div>
+        <span style="font-size:.75rem;font-weight:700;min-width:32px">${pct}%</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+function atualizarProg(i,v){estudos[i].prog=Math.min(100,Math.max(0,parseInt(v)||0));lss('estudos_and',estudos);renderEstudos();renderKPIs();}
+function addEstudo(){
+  const titulo=document.getElementById('est-titulo').value.trim();if(!titulo) return;
+  estudos.push({tipo:document.getElementById('est-tipo').value,titulo,autor:document.getElementById('est-autor').value,prog:document.getElementById('est-prog').value||0,meta:document.getElementById('est-meta').value});
+  lss('estudos_and',estudos);renderEstudos();renderKPIs();
+  ['est-titulo','est-autor','est-prog','est-meta'].forEach(id=>document.getElementById(id).value='');
+}
+function delEstudo(i){estudos.splice(i,1);lss('estudos_and',estudos);renderEstudos();renderKPIs();}
+
+let biblioteca=ls('biblioteca',[]);
+function renderBiblioteca(){
+  const el=document.getElementById('biblioteca-lista');
+  if(!biblioteca.length){el.innerHTML=empty('Sua biblioteca está vazia.');return;}
+  const sorted=[...biblioteca].sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+  el.innerHTML=sorted.map(b=>{
+    const ri=biblioteca.indexOf(b);
+    return `<div class="item-row">
+      <span class="badge badge-b">${b.tipo}</span>
+      <span class="nome" style="flex:1">${b.titulo}</span>
+      <span class="det">${b.autor||''}</span>
+      <span>${'⭐'.repeat(parseInt(b.stars)||0)}</span>
+      <span class="det">${fmtData(b.data)||''}</span>
+      <span class="det" style="flex:1">${b.obs||''}</span>
+      <button class="del-btn" onclick="delBib(${ri})">✕</button>
+    </div>`;
+  }).join('');
+}
+function addBiblioteca(){
+  const titulo=document.getElementById('bib-titulo').value.trim();if(!titulo) return;
+  biblioteca.push({tipo:document.getElementById('bib-tipo').value,titulo,autor:document.getElementById('bib-autor').value,data:document.getElementById('bib-data').value,stars:document.getElementById('bib-stars').value,obs:document.getElementById('bib-obs').value});
+  lss('biblioteca',biblioteca);renderBiblioteca();
+  ['bib-titulo','bib-autor','bib-data','bib-obs'].forEach(id=>document.getElementById(id).value='');
+}
+function delBib(i){biblioteca.splice(i,1);lss('biblioteca',biblioteca);renderBiblioteca();}
+
+let metasEstudo=ls('metas_estudo',[]);
+function renderMetasEstudo(){
+  const el=document.getElementById('metas-estudo-lista');
+  if(!metasEstudo.length){el.innerHTML=empty('Nenhuma meta de estudo definida.');return;}
+  el.innerHTML=metasEstudo.map((m,i)=>{
+    const pct=m.meta>0?Math.min(100,Math.round((m.feito/m.meta)*100)):0;
+    const cor=pct>=100?'verde':pct>=50?'amarelo':'vermelho';
+    return `<div class="item-row" style="flex-direction:column;align-items:flex-start;gap:7px;">
+      <div style="display:flex;align-items:center;gap:8px;width:100%;flex-wrap:wrap;">
+        <span class="nome" style="flex:1">📌 ${m.tema}</span>
+        <input type="number" class="inp" style="width:70px;padding:3px 8px;" value="${m.feito}" min="0"
+          onchange="atualizarMetaEstudo(${i},this.value)">
+        <span class="det">de ${m.meta}h / semana</span>
+        <button class="del-btn" onclick="delMetaEstudo(${i})">✕</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;width:100%;">
+        <div class="prog-bar-wrap"><div class="prog-bar ${cor}" style="width:${pct}%"></div></div>
+        <span style="font-size:.75rem;font-weight:700;min-width:32px">${pct}%</span>
+        <span class="badge ${pct>=100?'badge-g':pct>=50?'badge-a':'badge-r'}">${pct>=100?'Meta! 🎉':pct+'%'}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+function atualizarMetaEstudo(i,v){metasEstudo[i].feito=Math.max(0,parseFloat(v)||0);lss('metas_estudo',metasEstudo);renderMetasEstudo();}
+function addMetaEstudo(){
+  const tema=document.getElementById('me-tema').value.trim();if(!tema) return;
+  metasEstudo.push({tema,meta:parseFloat(document.getElementById('me-horas').value)||0,feito:parseFloat(document.getElementById('me-feito').value)||0});
+  lss('metas_estudo',metasEstudo);renderMetasEstudo();
+  ['me-tema','me-horas','me-feito'].forEach(id=>document.getElementById(id).value='');
+}
+function delMetaEstudo(i){metasEstudo.splice(i,1);lss('metas_estudo',metasEstudo);renderMetasEstudo();}
+
+// ══ ESPORTE ══════════════════════════════════════════
+
+const DIAS_SEM=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+document.getElementById('tr-data').value=hojeStr;
+
+function renderSemana(){
+  const treinos=ls('treinos',[]);
+  const meta=ls('meta_treino',{dias:4,ativ:'Atividade física'});
+  const si=new Date(hoje); si.setDate(hoje.getDate()-hoje.getDay());
+  let tsem=0;
+  document.getElementById('semana-dots').innerHTML=DIAS_SEM.map((d,i)=>{
+    const dia=new Date(si); dia.setDate(si.getDate()+i);
+    const ds=dtStr(dia);
+    const treinou=treinos.some(t=>t.data===ds);
+    const ehHoje=ds===hojeStr;
+    if(treinou) tsem++;
+    const t=treinos.filter(t=>t.data===ds).map(t=>t.ativ).join(', ');
+    return `<div class="dia-dot ${treinou?'treinou':''} ${ehHoje?'hoje-dot':''}" title="${treinou?t:'Sem treino'}">
+      <div class="dot">${treinou?'✓':''}</div><span>${d}</span>
+    </div>`;
+  }).join('');
+  const pct=meta.dias>0?Math.min(100,Math.round((tsem/meta.dias)*100)):0;
+  document.getElementById('semana-resumo').textContent=`${tsem} de ${meta.dias} treinos realizados esta semana — Meta: ${meta.ativ}`;
+  document.getElementById('meta-treino-display').innerHTML=`
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:4px;">
+      <span style="font-size:.8rem"><strong>${tsem}/${meta.dias}</strong> dias treinados esta semana</span>
+      <div style="flex:1;min-width:120px"><div class="prog-bar-wrap"><div class="prog-bar ${pct>=100?'verde':pct>=50?'amarelo':'vermelho'}" style="width:${pct}%"></div></div></div>
+      <span style="font-size:.8rem;font-weight:700">${pct}%</span>
+      <span class="badge ${pct>=100?'badge-g':pct>=50?'badge-a':'badge-r'}">${pct>=100?'Meta atingida! 🎉':pct>=50?'Bom ritmo!':'Continue!'}</span>
+    </div>`;
+  document.getElementById('meta-dias').value=meta.dias;
+  document.getElementById('meta-ativ').value=meta.ativ;
+}
+function salvarMetaTreino(){
+  lss('meta_treino',{dias:parseInt(document.getElementById('meta-dias').value)||4,ativ:document.getElementById('meta-ativ').value||'Treino'});
+  renderSemana();renderKPIs();
+}
+
+let treinos=ls('treinos',[]);
+function renderTreinos(){
+  const tbody=document.getElementById('treinos-body');
+  const sorted=[...treinos].sort((a,b)=>b.data.localeCompare(a.data)).slice(0,30);
+  if(!sorted.length){tbody.innerHTML=`<tr><td colspan="6" style="color:#aaa;font-style:italic;font-size:.76rem;padding:10px">Nenhum treino registrado.</td></tr>`;return;}
+  const ib={Leve:'badge-g',Moderada:'badge-a',Intensa:'badge-r'};
+  tbody.innerHTML=sorted.map(t=>`<tr>
+    <td>${fmtData(t.data)}</td><td><strong>${t.ativ}</strong></td><td>${t.dur||'—'}</td>
+    <td><span class="badge ${ib[t.int]||'badge-b'}">${t.int}</span></td>
+    <td>${t.obs||'—'}</td>
+    <td><button class="del-btn" onclick="delTreino(${treinos.indexOf(t)})">✕</button></td>
+  </tr>`).join('');
+}
+function addTreino(){
+  const ativ=document.getElementById('tr-ativ').value.trim(),data=document.getElementById('tr-data').value;
+  if(!ativ||!data) return;
+  treinos.push({ativ,data,dur:document.getElementById('tr-dur').value,int:document.getElementById('tr-int').value,obs:document.getElementById('tr-obs').value});
+  lss('treinos',treinos);renderTreinos();renderSemana();renderKPIs();
+  ['tr-ativ','tr-dur','tr-obs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('tr-data').value=hojeStr;
+}
+function delTreino(i){
+  const t=treinos[i];treinos.splice(i,1);lss('treinos',treinos);renderTreinos();renderSemana();renderKPIs();
+}
+
+// ══ LAZER ════════════════════════════════════════════
+
+const IC={Viagem:'✈️',Restaurante:'🍽️',Atividade:'🎯',Evento:'🎭',Compra:'🛍️',Outro:'⭐'};
+const ICM={Família:'👨‍👩‍👧',Viagem:'✈️',Gastronomia:'🍽️',Natureza:'🌿',Cultura:'🎭',Outro:'📷'};
+
+let desejos=ls('desejos',[]);
+function renderDesejos(){
+  const el=document.getElementById('desejos-lista');
+  if(!desejos.length){el.innerHTML=empty('Sua lista de desejos está vazia. Que tal adicionar algo?');return;}
+  const po={alta:0,media:1,baixa:2};
+  const sorted=[...desejos].sort((a,b)=>po[a.prior]-po[b.prior]);
+  el.innerHTML=sorted.map(d=>{
+    const ri=desejos.indexOf(d);
+    const pb={alta:'badge-r',media:'badge-a',baixa:'badge-g'};
+    const pt={alta:'Alta 🔴',media:'Média 🟡',baixa:'Baixa 🟢'};
+    return `<div class="item-row">
+      <span style="font-size:1.2rem">${IC[d.cat]||'⭐'}</span>
+      <span class="nome" style="flex:1">${d.txt}</span>
+      <span class="badge badge-b">${d.cat}</span>
+      <span class="badge ${pb[d.prior]}">${pt[d.prior]}</span>
+      ${d.prazo?`<span class="det">📅 ${fmtData(d.prazo)}</span>`:''}
+      <button class="btn btn-sm btn-g" onclick="concluirDesejo(${ri})">✓ Feito!</button>
+      <button class="del-btn" onclick="delDesejo(${ri})">✕</button>
+    </div>`;
+  }).join('');
+}
+function addDesejo(){
+  const txt=document.getElementById('des-txt').value.trim();if(!txt) return;
+  desejos.push({txt,cat:document.getElementById('des-cat').value,prior:document.getElementById('des-prior').value,prazo:document.getElementById('des-prazo').value});
+  lss('desejos',desejos);renderDesejos();
+  document.getElementById('des-txt').value='';document.getElementById('des-prazo').value='';
+}
+function delDesejo(i){desejos.splice(i,1);lss('desejos',desejos);renderDesejos();}
+function concluirDesejo(i){
+  const d=desejos[i];
+  const m=ls('momentos',[]);
+  m.unshift({data:hojeStr,titulo:'✅ '+d.txt,cat:d.cat,obs:'Realizado! 🎉'});
+  lss('momentos',m);
+  desejos.splice(i,1);lss('desejos',desejos);renderDesejos();renderMomentos();
+  alert('🎉 Parabéns! Movido para Momentos Vividos!');
+}
+
+let momentos=ls('momentos',[]);
+function renderMomentos(){
+  const el=document.getElementById('momentos-lista');
+  momentos=ls('momentos',[]);
+  if(!momentos.length){el.innerHTML=empty('Cada experiência merece memória. Registre seu primeiro momento!');return;}
+  el.innerHTML=momentos.map((m,i)=>`<div class="item-row">
+    <span style="font-size:1.2rem">${ICM[m.cat]||'📷'}</span>
+    <span class="det" style="min-width:80px">${fmtData(m.data)}</span>
+    <span class="nome" style="flex:1">${m.titulo}</span>
+    <span class="badge badge-b">${m.cat}</span>
+    <span class="det" style="flex:1">${m.obs||''}</span>
+    <button class="del-btn" onclick="delMomento(${i})">✕</button>
+  </div>`).join('');
+}
+function addMomento(){
+  const titulo=document.getElementById('mom-titulo').value.trim(),data=document.getElementById('mom-data').value;
+  if(!titulo||!data) return;
+  const m=ls('momentos',[]);
+  m.unshift({titulo,data,cat:document.getElementById('mom-cat').value,obs:document.getElementById('mom-obs').value});
+  lss('momentos',m);renderMomentos();
+  ['mom-titulo','mom-obs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('mom-data').value=hojeStr;
+}
+function delMomento(i){momentos.splice(i,1);lss('momentos',momentos);renderMomentos();}
+
+// ══ NUTRIÇÃO ═════════════════════════════════════════
+
+document.getElementById('nut-dia-sel').value = hojeStr;
+
+function abrirAbaNutricao(){
+  renderRegistroDia();
+  renderRestricoes();
+  renderHistoricoNut();
+  renderKPIsNutricao();
+  renderMetasNutDisplay();
+}
+
+function salvarMetasNut(){
+  lss('nut_metas',{
+    kcal: parseInt(document.getElementById('nut-kcal-meta').value)||2000,
+    agua: parseFloat(document.getElementById('nut-agua-meta').value)||2.5,
+    refeicoes: parseInt(document.getElementById('nut-refeicoes-meta').value)||5,
+  });
+  renderMetasNutDisplay(); renderKPIsNutricao();
+}
+function renderMetasNutDisplay(){
+  const m = ls('nut_metas',{kcal:2000,agua:2.5,refeicoes:5});
+  document.getElementById('nut-kcal-meta').value = m.kcal;
+  document.getElementById('nut-agua-meta').value = m.agua;
+  document.getElementById('nut-refeicoes-meta').value = m.refeicoes;
+  document.getElementById('nut-metas-display').innerHTML=`
+    <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:.78rem;">
+      <span>🔥 <strong>${m.kcal}</strong> kcal/dia</span>
+      <span>💧 <strong>${m.agua} L</strong>/dia</span>
+      <span>🍽️ <strong>${m.refeicoes}</strong> refeições/dia</span>
+    </div>`;
+}
+function getDiaKey(ds){ return 'nut_dia_'+(ds||hojeStr); }
+function getDia(ds){ return ls(getDiaKey(ds),{refeicoes:[],agua_ml:0}); }
+function saveDia(ds,data){ lss(getDiaKey(ds),data); }
+
+function renderKPIsNutricao(){
+  const m = ls('nut_metas',{kcal:2000,agua:2.5,refeicoes:5});
+  const dia = getDia(hojeStr);
+  const kcalTotal = dia.refeicoes.reduce((a,r)=>a+(r.kcal||0),0);
+  const aguaL = (dia.agua_ml||0)/1000;
+  const pctKcal = Math.min(100,Math.round(kcalTotal/m.kcal*100));
+  const pctAgua = Math.min(100,Math.round(aguaL/m.agua*100));
+  document.getElementById('kpi-nutricao').innerHTML=`
+    <div class="kpi ${pctKcal>=80?'verde':pctKcal>=50?'amarelo':'vermelho'}">
+      <div class="kpi-val">${kcalTotal}</div><div class="kpi-lbl">Kcal hoje</div>
+      <div class="kpi-sub">Meta: ${m.kcal} kcal</div>
+    </div>
+    <div class="kpi ${pctAgua>=80?'verde':pctAgua>=50?'amarelo':'vermelho'}">
+      <div class="kpi-val">${aguaL.toFixed(1)}L</div><div class="kpi-lbl">Água hoje</div>
+      <div class="kpi-sub">Meta: ${m.agua}L</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val">${dia.refeicoes.length}</div><div class="kpi-lbl">Refeições</div>
+      <div class="kpi-sub">Meta: ${m.refeicoes}/dia</div>
+    </div>`;
+}
+
+function renderRegistroDia(){
+  const ds = document.getElementById('nut-dia-sel').value || hojeStr;
+  const dia = getDia(ds);
+  const m = ls('nut_metas',{kcal:2000,agua:2.5,refeicoes:5});
+  const d = new Date(ds+'T12:00:00');
+  document.getElementById('nut-data-label').textContent =
+    d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
+
+  const kcalTotal = dia.refeicoes.reduce((a,r)=>a+(r.kcal||0),0);
+  const aguaL = (dia.agua_ml||0)/1000;
+  const pctKcal = Math.min(100,Math.round(kcalTotal/m.kcal*100));
+  const pctAgua = Math.min(100,Math.round(aguaL/m.agua*100));
+
+  document.getElementById('nut-dia-kpis').innerHTML=`
+    <div class="kpi ${pctKcal>=80?'verde':pctKcal>=50?'amarelo':'vermelho'}">
+      <div class="kpi-val" style="font-size:1.2rem">${kcalTotal} kcal</div>
+      <div class="kpi-lbl">${pctKcal}% da meta</div>
+    </div>
+    <div class="kpi ${pctAgua>=80?'verde':pctAgua>=50?'amarelo':'vermelho'}">
+      <div class="kpi-val" style="font-size:1.2rem">${aguaL.toFixed(1)} L</div>
+      <div class="kpi-lbl">Água — ${pctAgua}%</div>
+    </div>`;
+
+  document.getElementById('nut-agua-total-txt').textContent = `Total de hoje: ${aguaL.toFixed(2)}L de ${m.agua}L`;
+
+  const el = document.getElementById('nut-refeicoes-dia');
+  if(!dia.refeicoes.length){ el.innerHTML=empty('Nenhuma refeição registrada para este dia.'); return; }
+  const avalIcon = {ótimo:'😊',bom:'🙂',regular:'😐',ruim:'😕'};
+  el.innerHTML = dia.refeicoes.map((r,i)=>`
+    <div class="item-row">
+      <span class="badge badge-g">${r.tipo}</span>
+      <span class="nome" style="flex:1">${r.alimento}</span>
+      ${r.kcal?`<span class="badge badge-a">🔥 ${r.kcal} kcal</span>`:''}
+      ${r.agua?`<span class="badge badge-b">💧 ${r.agua}ml</span>`:''}
+      <span>${avalIcon[r.aval]||''}</span>
+      <button class="del-btn" onclick="delRefeicao('${ds}',${i})">✕</button>
+    </div>`).join('');
+}
+
+function addRefeicao(){
+  const alimento = document.getElementById('nut-alimento').value.trim();
+  if(!alimento) return;
+  const ds = document.getElementById('nut-dia-sel').value || hojeStr;
+  const dia = getDia(ds);
+  const aguaRef = parseInt(document.getElementById('nut-agua').value)||0;
+  dia.refeicoes.push({
+    tipo:     document.getElementById('nut-tipo-ref').value,
+    alimento,
+    kcal:     parseInt(document.getElementById('nut-kcal').value)||0,
+    agua:     aguaRef,
+    aval:     document.getElementById('nut-aval').value,
+  });
+  dia.agua_ml = (dia.agua_ml||0) + aguaRef;
+  saveDia(ds,dia);
+  renderRegistroDia(); renderKPIsNutricao();
+  ['nut-alimento','nut-kcal','nut-agua'].forEach(id=>document.getElementById(id).value='');
+}
+function delRefeicao(ds,i){
+  const dia=getDia(ds);
+  const aguaRemovida = dia.refeicoes[i]?.agua||0;
+  dia.refeicoes.splice(i,1);
+  dia.agua_ml = Math.max(0,(dia.agua_ml||0)-aguaRemovida);
+  saveDia(ds,dia); renderRegistroDia(); renderKPIsNutricao();
+}
+function addAgua(ml){
+  const ds = document.getElementById('nut-dia-sel').value || hojeStr;
+  const dia = getDia(ds);
+  dia.agua_ml = (dia.agua_ml||0)+ml;
+  saveDia(ds,dia); renderRegistroDia(); renderKPIsNutricao();
+}
+
+let restricoes = ls('nut_restricoes',[]);
+function renderRestricoes(){
+  const el = document.getElementById('nut-restricoes-lista');
+  if(!restricoes.length){ el.innerHTML=empty('Nenhuma restrição cadastrada.'); return; }
+  const tb={
+    'Restrição médica':'badge-r','Intolerância':'badge-a',
+    'Preferência pessoal':'badge-g','Dieta':'badge-b'
+  };
+  el.innerHTML = restricoes.map((r,i)=>`
+    <div class="item-row">
+      <span style="font-size:1.2rem">⚠️</span>
+      <span class="nome">${r.item}</span>
+      <span class="badge ${tb[r.tipo]||'badge-b'}">${r.tipo}</span>
+      <span class="det">${r.obs||''}</span>
+      <button class="del-btn" onclick="delRestricao(${i})">✕</button>
+    </div>`).join('');
+}
+function addRestricao(){
+  const item = document.getElementById('nut-rest-item').value.trim(); if(!item) return;
+  restricoes.push({item,tipo:document.getElementById('nut-rest-tipo').value,obs:document.getElementById('nut-rest-obs').value});
+  lss('nut_restricoes',restricoes); renderRestricoes();
+  ['nut-rest-item','nut-rest-obs'].forEach(id=>document.getElementById(id).value='');
+}
+function delRestricao(i){ restricoes.splice(i,1); lss('nut_restricoes',restricoes); renderRestricoes(); }
+
+function renderHistoricoNut(){
+  const el = document.getElementById('nut-historico');
+  const m = ls('nut_metas',{kcal:2000,agua:2.5,refeicoes:5});
+  let html = '';
+  for(let i=6;i>=0;i--){
+    const d = new Date(hoje); d.setDate(hoje.getDate()-i);
+    const ds = dtStr(d);
+    const dia = getDia(ds);
+    const kcal = dia.refeicoes.reduce((a,r)=>a+(r.kcal||0),0);
+    const agua = ((dia.agua_ml||0)/1000).toFixed(1);
+    const pct = Math.min(100,Math.round(kcal/m.kcal*100));
+    const label = i===0?'Hoje':d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
+    html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;font-size:.78rem;flex-wrap:wrap;">
+      <span style="min-width:80px;font-weight:${i===0?'700':'400'}">${label}</span>
+      <div style="flex:1;min-width:80px"><div style="background:#e2e8f0;border-radius:20px;height:8px;overflow:hidden"><div style="height:100%;border-radius:20px;background:${pct>=80?'#16a34a':pct>=50?'#eab308':'#ef4444'};width:${pct}%"></div></div></div>
+      <span style="min-width:70px;opacity:.6">${kcal} kcal</span>
+      <span style="min-width:50px;opacity:.6">💧${agua}L</span>
+      <span style="opacity:.5">${dia.refeicoes.length} ref.</span>
+    </div>`;
+  }
+  el.innerHTML = html || empty('Sem registros.');
+}
+
+// ── INIT ─────────────────────────────────────────────
+document.getElementById('mom-data').value=hojeStr;
+renderKPIs();
+renderPesoLista();renderMetaPesoBar();renderGraficoPeso();
+renderMedidas();renderMeds();renderConsultas();renderExames();
+renderChecklist();renderProfissionais();
+renderEstudos();renderBiblioteca();renderMetasEstudo();
+renderTreinos();renderSemana();
+renderDesejos();renderMomentos();
+renderMetasNutDisplay();renderKPIsNutricao();
+</script>
+<script src="reminder.js"></script>
+</body>
+</html>
