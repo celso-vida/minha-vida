@@ -279,6 +279,55 @@
   // ----------------------------------------------------------
   // Autenticação e inicialização (sem depender do CDN para auth)
   // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  // Realtime: detecta mudanças na shared_data via WebSocket
+  // ----------------------------------------------------------
+  function startRealtime() {
+    if (!currentUser) return;
+    var token = getAccessToken() || SUPABASE_KEY;
+    var wsUrl = SUPABASE_URL.replace('https://', 'wss://') +
+                '/realtime/v1/websocket?apikey=' + SUPABASE_KEY + '&vsn=1.0.0';
+    var ws;
+    var reloadPending = false;
+
+    function connect() {
+      try {
+        ws = new WebSocket(wsUrl);
+      } catch(e) { return; }
+
+      ws.onopen = function() {
+        // Autentica e se inscreve na tabela shared_data
+        ws.send(JSON.stringify({
+          topic: 'realtime:public:shared_data',
+          event: 'phx_join',
+          payload: { access_token: token },
+          ref: '1'
+        }));
+      };
+
+      ws.onmessage = function(evt) {
+        try {
+          var msg = JSON.parse(evt.data);
+          // Evento de INSERT ou UPDATE na shared_data
+          if (msg.topic === 'realtime:public:shared_data' &&
+              (msg.event === 'INSERT' || msg.event === 'UPDATE') &&
+              !reloadPending) {
+            reloadPending = true;
+            // Pequena pausa para garantir que o dado já está no servidor
+            setTimeout(function() { window.location.reload(); }, 800);
+          }
+        } catch(e) {}
+      };
+
+      ws.onclose = function() {
+        // Reconecta após 5 segundos se a conexão cair
+        setTimeout(connect, 5000);
+      };
+    }
+
+    connect();
+  }
+
   async function init() {
     var user = getStoredUser();
 
@@ -316,6 +365,10 @@
     // Sessão já sincronizada: atualiza só os dados compartilhados silenciosamente.
     // Se o outro dispositivo fez um lançamento novo, detecta e recarrega a página.
     syncSharedSilently(); // fire-and-forget
+
+    // Realtime: escuta mudanças na shared_data via WebSocket
+    // Quando outro dispositivo salvar um dado compartilhado, recarrega automaticamente.
+    startRealtime();
 
     // Exposição pública
     window.mvUser = currentUser;
