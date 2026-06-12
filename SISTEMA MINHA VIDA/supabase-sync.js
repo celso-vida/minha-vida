@@ -349,6 +349,12 @@
     }
 
     var alreadySynced = sessionStorage.getItem('mv_synced');
+    // Se mv_synced está ativo mas não há dados pessoais no localStorage,
+    // força novo sync (ex: novo navegador, localStorage limpo, novo dispositivo)
+    if (alreadySynced && !localStorage.getItem('pipe_items') && !localStorage.getItem('dev_planos')) {
+      alreadySynced = null;
+      sessionStorage.removeItem('mv_synced');
+    }
     if (!alreadySynced) {
       // Primeira visita da sessão: sync completo com overlay (dados pessoais + compartilhados)
       if (document.body) showOverlay();
