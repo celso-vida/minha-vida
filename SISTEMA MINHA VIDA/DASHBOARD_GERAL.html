@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="theme-color" content="#1e3a5f">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Minha Vida — Celso</title>
@@ -906,7 +909,7 @@ function setAreaStatus(key,st){
   });
 }
 function abrirDash(arq){
-  window.open(arq,'_blank');
+  window.location.href = arq;
 }
 
 // ── PIPELINE / KANBAN ─────────────────────────────────
@@ -2017,10 +2020,4 @@ const FAMILIA=[
     </div>
     <div id="bloco-edit-btns">
       <button id="bloco-edit-cancel" onclick="fecharEditBloco()">Cancelar</button>
-      <button id="bloco-edit-save" onclick="salvarEditBloco()">Salvar</button>
-    </div>
-  </div>
-</div>
-<script src="reminder.js"></script>
-</body>
-</html>
+      <button id="bloco-edit-save" oncl

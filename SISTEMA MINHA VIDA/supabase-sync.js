@@ -132,6 +132,44 @@
     return resp.ok;
   }
 
+  // Aplica linhas de shared_data no localStorage (sem overlay)
+  function applySharedRows(rows) {
+    rows.forEach(function (row) {
+      var val = row.value;
+      if (typeof val === 'string') {
+        try { val = JSON.parse(val); } catch(_) {}
+      }
+      _origSet(row.key, JSON.stringify(val));
+    });
+  }
+
+  // Sync silencioso dos dados compartilhados — roda em todo carregamento de página.
+  // Se houver dados novos, recarrega a página para mostrar os valores atualizados.
+  async function syncSharedSilently() {
+    if (!currentUser) return;
+    try {
+      var sharedData = await supaFetch('shared_data?select=key,value');
+      var changed = false;
+      sharedData.forEach(function(row) {
+        var val = row.value;
+        if (typeof val === 'string') { try { val = JSON.parse(val); } catch(_) {} }
+        var newStr = JSON.stringify(val);
+        if (localStorage.getItem(row.key) !== newStr) {
+          _origSet(row.key, newStr);
+          changed = true;
+        }
+      });
+      if (changed) {
+        // Dados compartilhados mudaram (outro dispositivo fez um lançamento):
+        // recarrega para mostrar os novos valores. Na próxima carga, o sync
+        // não detecta mudança → não recarrega → evita loop infinito.
+        window.location.reload();
+      }
+    } catch (err) {
+      console.warn('[sync] ⚠️ Falha ao atualizar dados compartilhados:', err.message);
+    }
+  }
+
   async function syncFromSupabase() {
     if (!currentUser) return false;
     var changed = false;
@@ -166,17 +204,8 @@
       // Dados compartilhados via fetch nativo
       var sharedData = await supaFetch('shared_data?select=key,value');
       totalLoaded += sharedData.length;
-
-      sharedData.forEach(function (row) {
-        // Mesma correção de duplo encoding para shared_data
-        var val = row.value;
-        if (typeof val === 'string') {
-          try { val = JSON.parse(val); } catch(_) {}
-        }
-        var serialized = JSON.stringify(val);
-        _origSet(row.key, serialized);
-        changed = true;
-      });
+      applySharedRows(sharedData);
+      changed = true;
 
       setProgress(100);
       setOverlayMsg('✅ ' + totalLoaded + ' itens carregados!', 'Abrindo dashboard...', '#16a34a');
@@ -264,7 +293,6 @@
 
     currentUser = user;
 
-    // Primeira visita da sessão: sincroniza do cloud
     // Força novo sync se os dados estiverem em formato errado (duplo-encoded)
     var testVal = localStorage.getItem('pipe_items') || localStorage.getItem('fin_contas');
     if (testVal && testVal.charAt(0) === '"') {
@@ -273,6 +301,7 @@
 
     var alreadySynced = sessionStorage.getItem('mv_synced');
     if (!alreadySynced) {
+      // Primeira visita da sessão: sync completo com overlay (dados pessoais + compartilhados)
       if (document.body) showOverlay();
       else document.addEventListener('DOMContentLoaded', showOverlay);
 
@@ -283,6 +312,10 @@
       window.location.reload();
       return;
     }
+
+    // Sessão já sincronizada: atualiza só os dados compartilhados silenciosamente.
+    // Se o outro dispositivo fez um lançamento novo, detecta e recarrega a página.
+    syncSharedSilently(); // fire-and-forget
 
     // Exposição pública
     window.mvUser = currentUser;

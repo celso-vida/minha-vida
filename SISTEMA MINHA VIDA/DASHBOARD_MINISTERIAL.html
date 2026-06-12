@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="theme-color" content="#1e3a5f">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Área Ministerial — Celso</title>
@@ -706,9 +709,4 @@ function addTarefaMin(){
 function toggleTarefaMin(i){tarefasMin[i].status=tarefasMin[i].status==='feita'?'pendente':'feita';lss('min_tarefas',tarefasMin);renderTarefasMin();renderKPIsAgenda();}
 function delTarefaMin(i){tarefasMin.splice(i,1);lss('min_tarefas',tarefasMin);renderTarefasMin();renderKPIsAgenda();}
 
-// ── INIT ─────────────────────────────────────────────
-renderPregacoes();
-</script>
-<script src="reminder.js"></script>
-</body>
-</html>
+// ── INIT ─────────────────────────────────

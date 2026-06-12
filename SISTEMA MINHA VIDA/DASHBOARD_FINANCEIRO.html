@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="theme-color" content="#1e3a5f">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Financeiro — Celso</title>
@@ -667,11 +670,4 @@ function importarFinanceiro(){
   i.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(d.contas)contas=d.contas;if(d.lancamentos)lancamentos=d.lancamentos;if(d.ativos)ativos=d.ativos;if(d.passivos)passivos=d.passivos;if(d.metas)metas=d.metas;if(d.taxas)taxas=d.taxas;sv('contas',contas);sv('lancamentos',lancamentos);sv('ativos',ativos);sv('passivos',passivos);sv('metas',metas);sv('taxas',taxas);alert('✅ Importado! Por: '+(d.por||'?')+' em '+(d.exportadoEm||'?'));renderVisao();}catch{alert('❌ Arquivo inválido.');}};r.readAsText(f);};i.click();
 }
 function exportarTudo(){const d={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);d[k]=localStorage.getItem(k);}const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`backup_financeiro_${hojeStr}.json`;a.click();}
-function importarTudo(){const i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);Object.entries(d).forEach(([k,v])=>localStorage.setItem(k,v));alert('✅ Restaurado!');location.reload();}catch{alert('❌ Inválido.');}};r.readAsText(f);};i.click();}
-
-// INIT
-$('transf-data')&&($('transf-data').value=hojeStr);
-renderVisao();
-</script>
-</body>
-</html>
+function importarTudo(){const i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);Object.entries(d).forEach(([k,v])=>localStorage.setItem(k,v));alert('✅ Restaurado!');location.reload();}catch{alert('❌ Inválido.');}};r.readAsText(
