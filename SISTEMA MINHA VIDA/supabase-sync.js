@@ -342,6 +342,29 @@
 
     currentUser = user;
 
+    // Nome de exibição por email
+    var NAME_MAP = {
+      'celso@3whotelaria.com.br': 'Celso',
+      'selmamiziara@hotmail.com': 'Selma'
+    };
+    var displayName = NAME_MAP[currentUser.email] || currentUser.email.split('@')[0];
+    window.mvDisplayName = displayName;
+
+    // Substitui "Celso" pelo nome do usuário logado no título e no DOM
+    function applyUserName() {
+      document.title = document.title.replace(/Celso/g, displayName);
+      function walk(node) {
+        if (node.nodeType === 3) {
+          if (node.textContent.includes('Celso')) node.textContent = node.textContent.replace(/Celso/g, displayName);
+        } else if (node.nodeType === 1 && node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE') {
+          node.childNodes.forEach(walk);
+        }
+      }
+      if (document.body) walk(document.body);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyUserName);
+    else applyUserName();
+
     // Força novo sync se os dados estiverem em formato errado (duplo-encoded)
     var testVal = localStorage.getItem('pipe_items') || localStorage.getItem('fin_contas');
     if (testVal && testVal.charAt(0) === '"') {
