@@ -147,6 +147,9 @@
   // Se houver dados novos, recarrega a página para mostrar os valores atualizados.
   async function syncSharedSilently() {
     if (!currentUser) return;
+    // Anti-loop: só recarrega uma vez a cada 60 segundos por sessão
+    var lastReload = sessionStorage.getItem('mv_shared_reload_ts');
+    if (lastReload && (Date.now() - parseInt(lastReload)) < 60000) return;
     try {
       var sharedData = await supaFetch('shared_data?select=key,value');
       var changed = false;
@@ -160,9 +163,7 @@
         }
       });
       if (changed) {
-        // Dados compartilhados mudaram (outro dispositivo fez um lançamento):
-        // recarrega para mostrar os novos valores. Na próxima carga, o sync
-        // não detecta mudança → não recarrega → evita loop infinito.
+        sessionStorage.setItem('mv_shared_reload_ts', String(Date.now()));
         window.location.reload();
       }
     } catch (err) {
