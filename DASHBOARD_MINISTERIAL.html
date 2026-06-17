@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="theme-color" content="#1e3a5f">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Área Ministerial — Celso</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-sync.js?v=4"></script>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#DBDBDB;--primary:#1A4168;--area:#9333ea;--white:#fff;--border:#c0c8d0;--radius:14px;--shadow:0 4px 18px rgba(0,0,0,.10);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--primary);min-height:100vh;padding:18px 14px 60px;}
+header{display:flex;align-items:center;gap:14px;max-width:1150px;margin:0 auto 18px;flex-wrap:wrap;}
+.back-btn{background:var(--area);color:#fff;border:none;border-radius:9px;padding:7px 14px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
+.back-btn:hover{opacity:.85;}
+.header-title{font-family:'Caveat',cursive;font-size:2rem;font-weight:700;color:var(--primary);}
+.header-sub{font-size:.78rem;color:var(--primary);opacity:.55;margin-top:2px;}
+/* ABAS */
+.tabs{display:flex;gap:6px;max-width:1150px;margin:0 auto 18px;flex-wrap:wrap;}
+.tab{background:var(--white);border:2px solid var(--border);border-radius:10px;padding:8px 16px;font-size:.79rem;font-weight:700;cursor:pointer;color:var(--primary);font-family:inherit;transition:all .15s;}
+.tab:hover{background:#f5f0ff;border-color:var(--area);}
+.tab.active{background:var(--area);color:#fff;border-color:var(--area);}
+.tab-pane{display:none;max-width:1150px;margin:0 auto;}
+.tab-pane.active{display:block;}
+/* BLOCOS */
+.block{background:var(--white);border-radius:var(--radius);padding:18px 20px;margin-bottom:14px;border:1px solid var(--border);box-shadow:var(--shadow);}
+.block-title{font-size:.82rem;color:var(--primary);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--bg);display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+/* INPUTS */
+.inp{background:#f0f4f8;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:.78rem;font-family:inherit;color:var(--primary);}
+.inp:focus{outline:none;border-color:var(--area);}
+.sel{background:#f0f4f8;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:.76rem;font-family:inherit;color:var(--primary);cursor:pointer;}
+textarea.inp{resize:vertical;min-height:70px;width:100%;}
+.btn{background:var(--primary);color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn:hover{opacity:.85;}
+.btn-p{background:var(--area);}
+.btn-g{background:#16a34a;}
+.btn-r{background:#ef4444;}
+.btn-sm{padding:3px 10px;font-size:.7rem;}
+/* FORM */
+.form-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;flex:1;min-width:110px;}
+.form-label{font-size:.7rem;font-weight:700;opacity:.55;text-transform:uppercase;letter-spacing:.06em;}
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:14px;}
+.kpi{background:#f0f4f8;border-radius:10px;padding:12px;text-align:center;border:1px solid var(--border);}
+.kpi-val{font-size:1.5rem;font-weight:800;line-height:1;}
+.kpi-lbl{font-size:.63rem;text-transform:uppercase;letter-spacing:.07em;opacity:.5;margin-top:4px;}
+.kpi-sub{font-size:.68rem;color:var(--area);font-weight:600;margin-top:2px;}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:700;white-space:nowrap;}
+.badge-g{background:#dcfce7;color:#15803d;}
+.badge-a{background:#fef9c3;color:#854d0e;}
+.badge-r{background:#fee2e2;color:#991b1b;}
+.badge-b{background:#dbeafe;color:#1e40af;}
+.badge-p{background:#f3e8ff;color:#6b21a8;}
+.badge-o{background:#ffedd5;color:#9a3412;}
+/* ITEM */
+.item-row{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:9px;margin-bottom:6px;background:#f5f7fa;border:1px solid var(--border);font-size:.78rem;flex-wrap:wrap;}
+.item-row .nome{font-weight:700;}
+.item-row .det{opacity:.6;font-size:.72rem;}
+.del-btn{background:rgba(239,68,68,.12);border:none;border-radius:5px;padding:2px 8px;font-size:.7rem;color:#dc2626;cursor:pointer;font-family:inherit;}
+.del-btn:hover{background:rgba(239,68,68,.25);}
+/* CARD PREGAÇÃO */
+.preg-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;transition:box-shadow .15s;}
+.preg-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.10);}
+.preg-header{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+.preg-data{font-size:.72rem;opacity:.5;min-width:70px;}
+.preg-titulo{font-size:.95rem;font-weight:800;flex:1;}
+.preg-texto{font-size:.8rem;color:var(--area);font-weight:700;font-style:italic;}
+.preg-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;}
+.preg-notas{font-size:.78rem;opacity:.6;margin-top:6px;line-height:1.5;border-top:1px solid var(--bg);padding-top:6px;}
+/* PASTORAL CARD */
+.past-card{background:var(--white);border:1px solid var(--border);border-radius:11px;padding:12px 14px;margin-bottom:8px;}
+.past-nome{font-weight:800;font-size:.88rem;}
+.past-situacao{font-size:.72rem;opacity:.6;margin-bottom:6px;}
+/* PROGRESSO */
+.prog-bar-wrap{background:#e2e8f0;border-radius:20px;height:8px;overflow:hidden;flex:1;}
+.prog-bar{height:100%;border-radius:20px;background:var(--area);}
+/* TABELA */
+.tbl{width:100%;border-collapse:collapse;font-size:.78rem;}
+.tbl th{background:#f0f4f8;padding:7px 10px;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;opacity:.6;font-weight:700;}
+.tbl td{padding:7px 10px;border-top:1px solid var(--bg);vertical-align:middle;}
+.tbl tr:hover td{background:#f8fafc;}
+@media(max-width:600px){.kpi-row{grid-template-columns:repeat(2,1fr);}.form-row{flex-direction:column;}}
+
+/* ── FOTO DA ÁREA ─────────────────────────────────── */
+.area-foto-wrap{
+  flex-shrink:0; cursor:pointer; position:relative;
+  border-radius:14px; overflow:hidden;
+  border:2px solid var(--border);
+  box-shadow:0 4px 16px rgba(0,0,0,.13);
+  transition:transform .2s, box-shadow .2s;
+  width:210px; height:130px;
+  background:var(--area);
+}
+.area-foto-wrap:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.18);}
+.area-foto-wrap:hover .area-foto-overlay{opacity:1;}
+.area-foto-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;border-radius:12px;z-index:1;}
+.area-foto-placeholder{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  z-index:0;
+}
+.area-foto-placeholder-icon{font-size:2.2rem;opacity:.45;}
+.area-foto-placeholder-txt{font-size:.7rem;font-weight:700;color:#fff;opacity:.55;text-transform:uppercase;letter-spacing:.08em;}
+.area-foto-overlay{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,.48);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s;
+  border-radius:12px;
+  z-index:2;
+}
+.area-foto-overlay span{
+  color:#fff;font-size:.78rem;font-weight:700;
+  background:rgba(255,255,255,.18);
+  padding:6px 14px;border-radius:20px;
+  border:1px solid rgba(255,255,255,.3);
+}
+@media(max-width:600px){.area-foto-wrap{width:100%;height:100px;}}
+
+</style>
+
+<script>
+(function(){
+  var src=localStorage.getItem('foto_perfil');
+  if(!src)return;
+  var lnk=document.querySelector('link[rel~="icon"]');
+  if(!lnk){lnk=document.createElement('link');lnk.rel='icon';document.head.appendChild(lnk);}
+  lnk.href=src;
+})();
+</script>
+</head>
+<body>
+
+<header>
+  <a class="back-btn" href="DASHBOARD_GERAL.html">← Painel Geral</a>
+  <div>
+    <div class="header-title">Ministerial — Celso</div>
+    <div class="header-sub" id="data-hoje"></div>
+  </div>
+  <div class="area-foto-wrap" onclick="document.getElementById('af-input').click()" title="Clique para adicionar ou trocar a foto">
+    <img id="af-img" class="area-foto-img" src="" alt="Foto da área">
+    <div id="af-ph" class="area-foto-placeholder">
+      <div class="area-foto-placeholder-icon">⛪</div>
+      <div class="area-foto-placeholder-txt">Adicionar foto</div>
+    </div>
+    <div class="area-foto-overlay"><span>📷 Trocar foto</span></div>
+    <input type="file" id="af-input" accept="image/*" style="display:none" onchange="loadAreaFoto(this)">
+  </div>
+  <button onclick="mvSignOut()" title="Sair" style="margin-left:auto;background:#dc2626;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:0.85rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.25)">🚪 Sair</button>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="abrirAba('pregacoes',this)">📖 Pregações</button>
+  <button class="tab" onclick="abrirAba('pastoral',this)">🤝 Cuidado Pastoral</button>
+  <button class="tab" onclick="abrirAba('evangelismo',this)">🌱 Evangelismo</button>
+  <button class="tab" onclick="abrirAba('agenda',this)">📅 Agenda & Tarefas</button>
+</div>
+
+<!-- ══ PREGAÇÕES ═══════════════════════════════════════ -->
+<div class="tab-pane active" id="pane-pregacoes">
+
+  <div class="kpi-row" id="kpi-preg"></div>
+
+  <!-- Filtros -->
+  <div class="block" style="padding:12px 16px;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <span style="font-size:.75rem;font-weight:700;opacity:.6">Filtrar:</span>
+      <button class="btn btn-sm btn-p" id="pf-todas" onclick="filtrarPreg('todas',this)">Todas</button>
+      <button class="btn btn-sm" id="pf-mes" onclick="filtrarPreg('mes',this)">Este mês</button>
+      <button class="btn btn-sm" id="pf-ano" onclick="filtrarPreg('ano',this)">Este ano</button>
+      <input class="inp" id="pf-busca" type="text" placeholder="🔍 Buscar por texto ou referência..." style="flex:1;min-width:180px" oninput="filtrarPreg('busca',null)">
+    </div>
+  </div>
+
+  <div id="pregacoes-lista"></div>
+
+  <!-- CADASTRAR -->
+  <div class="block">
+    <div class="block-title">✏️ Registrar Pregação / Ensino</div>
+    <div class="form-row">
+      <div class="form-group"><span class="form-label">Data</span><input class="inp" id="pr-data" type="date"></div>
+      <div class="form-group" style="flex:2"><span class="form-label">Título</span><input class="inp" id="pr-titulo" type="text" placeholder="Título da mensagem"></div>
+      <div class="form-group"><span class="form-label">Texto Bíblico</span><input class="inp" id="pr-texto" type="text" placeholder="ex: João 3:16"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><span class="form-label">Tipo</span>
+        <select class="sel" id="pr-tipo">
+          <option>Culto dominical</option><option>Culto de quarta</option><option>Estudo bíblico</option>
+          <option>Célula / Pequeno grupo</option><option>Conferência</option><option>Retiro</option>
+          <option>Culto especial</option><option>Outro</option>
+        </select>
+      </div>
+      <div class="form-group"><span class="form-label">Igreja / Local</span><input class="inp" id="pr-local" type="text" placeholder="Nome da igreja ou local"></div>
+      <div class="form-group"><span class="form-label">Série / Tema</span><input class="inp" id="pr-serie" type="text" placeholder="ex: Série Romanos"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1">
+        <span class="form-label">Esboço / Notas</span>
+        <textarea class="inp" id="pr-notas" placeholder="Pontos principais, observações, aplicações..."></textarea>
+      </div>
+    </div>
+    <div class="form-row">
+      <button class="btn btn-p" onclick="addPregacao()">+ Registrar Pregação</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ CUIDADO PASTORAL ════════════════════════════════ -->
+<div class="tab-pane" id="pane-pastoral">
+
+  <div class="kpi-row" id="kpi-past"></div>
+
+  <div class="block">
+    <div class="block-title">🤝 Pessoas sob Cuidado Pastoral</div>
+    <div id="pastoral-lista"></div>
+    <div style="margin-top:14px;padding-top:12px;border-top:2px solid var(--bg);">
+      <div class="block-title" style="border:none;padding:0;margin-bottom:10px;">➕ Adicionar Pessoa</div>
+      <div class="form-row">
+        <div class="form-group"><span class="form-label">Nome</span><input class="inp" id="pa-nome" type="text" placeholder="Nome"></div>
+        <div class="form-group"><span class="form-label">Situação</span>
+          <select class="sel" id="pa-sit">
+            <option value="membro">Membro</option><option value="visitante">Visitante</option>
+            <option value="aconselhamento">Em aconselhamento</option><option value="discipulado">Discipulado</option>
+            <option value="crise">Em crise</option><option value="inativo">Inativo</option>
+          </select>
+        </div>
+        <div class="form-group"><span class="form-label">Igreja / Contexto</span><input class="inp" id="pa-igreja" type="text" placeholder="Igreja ou grupo"></div>
+        <div class="form-group"><span class="form-label">Contato (WhatsApp)</span><input class="inp" id="pa-wpp" type="text" placeholder="+55 11 99999-9999"></div>
+        <div class="form-group"><span class="form-label">Obs.</span><input class="inp" id="pa-obs" type="text" placeholder="Situação, necessidade..."></div>
+        <button class="btn btn-p" style="align-self:flex-end" onclick="addPastoral()">+ Adicionar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Registro de visitas / contatos pastorais -->
+  <div class="block">
+    <div class="block-title">📋 Registro de Visitas & Contatos Pastorais</div>
+    <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead><tr><th>Data</th><th>Pessoa</th><th>Tipo</th><th>Observações</th><th>Próximo passo</th><th></th></tr></thead>
+        <tbody id="visitas-body"></tbody>
+      </table>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><span class="form-label">Data</span><input class="inp" id="vi-data" type="date"></div>
+      <div class="form-group"><span class="form-label">Pessoa</span><select class="sel" id="vi-pessoa"></select></div>
+      <div class="form-group"><span class="form-label">Tipo</span>
+        <select class="sel" id="vi-tipo">
+          <option>Visita presencial</option><option>Ligação</option><option>WhatsApp</option>
+          <option>Aconselhamento</option><option>Oração</option><option>Outro</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex:2"><span class="form-label">Observações</span><input class="inp" id="vi-obs" type="text" placeholder="Como foi, o que foi tratado..."></div>
+      <div class="form-group"><span class="form-label">Próximo passo</span><input class="inp" id="vi-prox" type="text" placeholder="O que fazer a seguir..."></div>
+      <button class="btn btn-p" style="align-self:flex-end" onclick="addVisita()">+ Registrar</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ EVANGELISMO ════════════════════════════════════ -->
+<div class="tab-pane" id="pane-evangelismo">
+
+  <div class="kpi-row" id="kpi-evan"></div>
+
+  <div class="block">
+    <div class="block-title">🌱 Pessoas Alcançadas / em Contato</div>
+    <div id="evan-lista"></div>
+    <div style="margin-top:14px;padding-top:12px;border-top:2px solid var(--bg);">
+      <div class="block-title" style="border:none;padding:0;margin-bottom:10px;">➕ Registrar Pessoa</div>
+      <div class="form-row">
+        <div class="form-group"><span class="form-label">Nome</span><input class="inp" id="ev-nome" type="text" placeholder="Nome"></div>
+        <div class="form-group"><span class="form-label">Status</span>
+          <select class="sel" id="ev-status">
+            <option value="contato">Primeiro contato</option><option value="interesse">Demonstrou interesse</option>
+            <option value="estudando">Estudando a Bíblia</option><option value="convertido">Convertido</option>
+            <option value="integrado">Integrado à igreja</option><option value="inativo">Sem contato</option>
+          </select>
+        </div>
+        <div class="form-group"><span class="form-label">Como chegou</span><input class="inp" id="ev-como" type="text" placeholder="ex: Indicação, evento, visita..."></div>
+        <div class="form-group"><span class="form-label">WhatsApp</span><input class="inp" id="ev-wpp" type="text" placeholder="+55 11 99999-9999"></div>
+        <div class="form-group"><span class="form-label">Último contato</span><input class="inp" id="ev-ult" type="date"></div>
+        <div class="form-group"><span class="form-label">Obs.</span><input class="inp" id="ev-obs" type="text" placeholder="Obs."></div>
+        <button class="btn btn-p" style="align-self:flex-end" onclick="addEvan()">+ Adicionar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Registro de ações evangelísticas -->
+  <div class="block">
+    <div class="block-title">📣 Ações Evangelísticas</div>
+    <div id="acoes-evan-lista"></div>
+    <div class="form-row">
+      <div class="form-group"><span class="form-label">Data</span><input class="inp" id="ae-data" type="date"></div>
+      <div class="form-group" style="flex:2"><span class="form-label">Descrição</span><input class="inp" id="ae-desc" type="text" placeholder="ex: Pregação no parque, Distribuição de Bíblias..."></div>
+      <div class="form-group"><span class="form-label">Local</span><input class="inp" id="ae-local" type="text" placeholder="Local"></div>
+      <div class="form-group"><span class="form-label">Resultado</span><input class="inp" id="ae-res" type="text" placeholder="Quantos, decisões..."></div>
+      <button class="btn btn-p" style="align-self:flex-end" onclick="addAcaoEvan()">+ Registrar</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ AGENDA & TAREFAS ════════════════════════════════ -->
+<div class="tab-pane" id="pane-agenda">
+
+  <!-- KPIs -->
+  <div class="kpi-row" id="kpi-agenda"></div>
+
+  <!-- AGENDA -->
+  <div class="block">
+    <div class="block-title">📅 Agenda Ministerial</div>
+    <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead><tr><th>Data / Hora</th><th>Evento</th><th>Tipo</th><th>Igreja / Local</th><th>Status</th><th>Obs.</th><th></th></tr></thead>
+        <tbody id="ag-min-body"></tbody>
+      </table>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><span class="form-label">Data</span><input class="inp" id="am-data" type="date"></div>
+      <div class="form-group"><span class="form-label">Hora</span><input class="inp" id="am-hora" type="time" value="19:00"></div>
+      <div class="form-group" style="flex:2"><span class="form-label">Evento</span><input class="inp" id="am-evento" type="text" placeholder="ex: Culto dominical, Reunião de líderes..."></div>
+      <div class="form-group"><span class="form-label">Tipo</span>
+        <select class="sel" id="am-tipo">
+          <option>Culto</option><option>Reunião</option><option>Visita pastoral</option>
+          <option>Conferência</option><option>Retiro</option><option>Treinamento</option><option>Outro</option>
+        </select>
+      </div>
+      <div class="form-group"><span class="form-label">Igreja / Local</span><input class="inp" id="am-local" type="text" placeholder="Nome da igreja ou local"></div>
+      <div class="form-group"><span class="form-label">Status</span>
+        <select class="sel" id="am-status"><option value="confirmado">Confirmado</option><option value="pendente">Pendente</option><option value="realizado">Realizado</option><option value="cancelado">Cancelado</option></select>
+      </div>
+      <div class="form-group"><span class="form-label">Obs.</span><input class="inp" id="am-obs" type="text" placeholder="Observações"></div>
+      <button class="btn btn-p" style="align-self:flex-end" onclick="addAgendaMin()">+ Adicionar</button>
+    </div>
+  </div>
+
+  <!-- TAREFAS -->
+  <div class="block">
+    <div class="block-title">✅ Tarefas Ministeriais</div>
+    <div id="tarefas-min-lista"></div>
+    <div class="form-row">
+      <div class="form-group" style="flex:2"><span class="form-label">Tarefa</span><input class="inp" id="tm-txt" type="text" placeholder="ex: Preparar sermão, Visitar o João, Enviar relatório..."></div>
+      <div class="form-group"><span class="form-label">Categoria</span>
+        <select class="sel" id="tm-cat">
+          <option>Pregação</option><option>Visita</option><option>Administração</option>
+          <option>Comunicação</option><option>Discipulado</option><option>Estudo</option><option>Outro</option>
+        </select>
+      </div>
+      <div class="form-group"><span class="form-label">Prazo</span><input class="inp" id="tm-prazo" type="date"></div>
+      <div class="form-group"><span class="form-label">Prioridade</span>
+        <select class="sel" id="tm-prior"><option value="alta">Alta</option><option value="media" selected>Média</option><option value="baixa">Baixa</option></select>
+      </div>
+      <button class="btn btn-p" style="align-self:flex-end" onclick="addTarefaMin()">+ Adicionar</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════ SCRIPTS ═══════════════════════════ -->
+<script>
+'use strict';
+const hoje=new Date();
+const dtStr=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const hojeStr=dtStr(hoje);
+const mesStr=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
+const anoStr=`${hoje.getFullYear()}`;
+const fmtData=s=>{if(!s)return '';const[y,m,d]=s.split('-');return`${d}/${m}/${y}`;};
+const ls=(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch{return def;}};
+const lss=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const empty=msg=>`<div style="font-size:.78rem;color:#aaa;font-style:italic;padding:8px 0">${msg}</div>`;
+
+document.getElementById('data-hoje').textContent=
+  hoje.toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+function abrirAba(id,btn){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='pregacoes') renderPregacoes();
+  if(id==='pastoral'){renderPastoral();popularSelectPastoral();renderVisitas();}
+  if(id==='evangelismo') renderEvan();
+  if(id==='agenda'){renderAgendaMin();renderTarefasMin();}
+}
+
+// ══ PREGAÇÕES ════════════════════════════════════════
+
+let pregFiltro='todas';
+document.getElementById('pr-data').value=hojeStr;
+let pregacoes=ls('min_pregacoes',[]);
+
+function renderKPIsPreg(){
+  const total=pregacoes.length;
+  const mes=pregacoes.filter(p=>p.data.startsWith(mesStr)).length;
+  const ano=pregacoes.filter(p=>p.data.startsWith(anoStr)).length;
+  const series=[...new Set(pregacoes.map(p=>p.serie).filter(Boolean))].length;
+  document.getElementById('kpi-preg').innerHTML=`
+    <div class="kpi"><div class="kpi-val" style="color:var(--area)">${total}</div><div class="kpi-lbl">Pregações</div><div class="kpi-sub">total registradas</div></div>
+    <div class="kpi"><div class="kpi-val">${mes}</div><div class="kpi-lbl">Este mês</div><div class="kpi-sub">${mesStr.split('-')[1]}/${mesStr.split('-')[0]}</div></div>
+    <div class="kpi"><div class="kpi-val">${ano}</div><div class="kpi-lbl">Este ano</div><div class="kpi-sub">${anoStr}</div></div>
+    <div class="kpi"><div class="kpi-val">${series}</div><div class="kpi-lbl">Séries</div><div class="kpi-sub">registradas</div></div>`;
+}
+
+function filtrarPreg(tipo,btn){
+  pregFiltro=tipo;
+  document.querySelectorAll('[id^="pf-"]').forEach(b=>{if(b.tagName==='BUTTON')b.className='btn btn-sm';});
+  if(btn) btn.className='btn btn-sm btn-p';
+  renderPregacoes(true);
+}
+
+function renderPregacoes(manterKpi){
+  if(!manterKpi) renderKPIsPreg();
+  const busca=document.getElementById('pf-busca').value.toLowerCase();
+  let lista=[...pregacoes].sort((a,b)=>b.data.localeCompare(a.data));
+  if(pregFiltro==='mes') lista=lista.filter(p=>p.data.startsWith(mesStr));
+  else if(pregFiltro==='ano') lista=lista.filter(p=>p.data.startsWith(anoStr));
+  if(busca) lista=lista.filter(p=>(p.titulo+p.texto+p.serie+p.local+p.notas).toLowerCase().includes(busca));
+  const el=document.getElementById('pregacoes-lista');
+  if(!lista.length){el.innerHTML=`<div class="block">${empty('Nenhuma pregação encontrada.')}</div>`;return;}
+  el.innerHTML=lista.map(p=>{
+    const ri=pregacoes.findIndex(x=>x.id===p.id);
+    const tipoBadge={
+      'Culto dominical':'badge-p','Culto de quarta':'badge-b','Estudo bíblico':'badge-g',
+      'Célula / Pequeno grupo':'badge-o','Conferência':'badge-r','Retiro':'badge-a'
+    };
+    return `<div class="preg-card">
+      <div class="preg-header">
+        <div>
+          <div class="preg-data">${fmtData(p.data)}</div>
+          <div class="preg-texto">${p.texto||''}</div>
+        </div>
+        <div style="flex:1">
+          <div class="preg-titulo">${p.titulo}</div>
+          <div class="preg-tags">
+            ${p.tipo?`<span class="badge ${tipoBadge[p.tipo]||'badge-b'}">${p.tipo}</span>`:''}
+            ${p.local?`<span class="badge badge-o">📍 ${p.local}</span>`:''}
+            ${p.serie?`<span class="badge badge-p">📚 ${p.serie}</span>`:''}
+          </div>
+        </div>
+        <button class="del-btn" onclick="delPregacao(${ri})">✕</button>
+      </div>
+      ${p.notas?`<div class="preg-notas">${p.notas.replace(/\n/g,'<br>')}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function addPregacao(){
+  const titulo=document.getElementById('pr-titulo').value.trim();
+  const data=document.getElementById('pr-data').value;
+  if(!titulo||!data){alert('Informe data e título.');return;}
+  pregacoes.unshift({id:'preg_'+Date.now(),titulo,data,texto:document.getElementById('pr-texto').value,tipo:document.getElementById('pr-tipo').value,local:document.getElementById('pr-local').value,serie:document.getElementById('pr-serie').value,notas:document.getElementById('pr-notas').value});
+  lss('min_pregacoes',pregacoes);renderPregacoes();
+  ['pr-titulo','pr-texto','pr-local','pr-serie','pr-notas'].forEach(id=>document.getElementById(id).value='');
+}
+function delPregacao(i){if(!confirm('Remover esta pregação?'))return;pregacoes.splice(i,1);lss('min_pregacoes',pregacoes);renderPregacoes();}
+
+// ══ PASTORAL ═════════════════════════════════════════
+
+let pastoral=ls('min_pastoral',[]);
+let visitas=ls('min_visitas',[]);
+
+function renderKPIsPast(){
+  const total=pastoral.length;
+  const acomp=pastoral.filter(p=>p.sit==='aconselhamento'||p.sit==='discipulado'||p.sit==='crise').length;
+  const semContato=pastoral.filter(p=>{const uc=ls('past_uc_'+p.id,null);if(!uc)return true;return Math.round((hoje-new Date(uc+'T12:00:00'))/86400000)>30;}).length;
+  document.getElementById('kpi-past').innerHTML=`
+    <div class="kpi"><div class="kpi-val" style="color:var(--area)">${total}</div><div class="kpi-lbl">Pessoas</div><div class="kpi-sub">sob cuidado</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:#ef4444">${acomp}</div><div class="kpi-lbl">Atenção especial</div><div class="kpi-sub">aconselhamento / crise</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:#ca8a04">${semContato}</div><div class="kpi-lbl">Sem contato</div><div class="kpi-sub">há mais de 30 dias</div></div>
+    <div class="kpi"><div class="kpi-val">${visitas.length}</div><div class="kpi-lbl">Visitas</div><div class="kpi-sub">registradas</div></div>`;
+}
+
+const sitBadge={membro:'badge-g',visitante:'badge-b',aconselhamento:'badge-r',discipulado:'badge-p',crise:'badge-r',inativo:'badge-a'};
+const sitLabel={membro:'Membro',visitante:'Visitante',aconselhamento:'Aconselhamento',discipulado:'Discipulado',crise:'Em crise',inativo:'Inativo'};
+
+function renderPastoral(){
+  renderKPIsPast();
+  const el=document.getElementById('pastoral-lista');
+  if(!pastoral.length){el.innerHTML=empty('Nenhuma pessoa cadastrada.');return;}
+  el.innerHTML=pastoral.map((p,i)=>{
+    const uc=ls('past_uc_'+p.id,null);
+    const dias=uc?Math.round((hoje-new Date(uc+'T12:00:00'))/86400000):null;
+    const wppNum=(p.wpp||'').replace(/\D/g,'');
+    const alerta=dias===null||dias>30;
+    return `<div class="past-card ${alerta?'border-left:3px solid #ef4444':''}">
+      <div style="display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+        <div style="flex:1">
+          <div class="past-nome">${p.nome} ${alerta?'<span class="badge badge-r" style="font-size:.6rem">Contato pendente</span>':''}</div>
+          <div class="past-situacao">${p.igreja||''}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:5px;">
+            <span class="badge ${sitBadge[p.sit]||'badge-b'}">${sitLabel[p.sit]||p.sit}</span>
+            ${uc?`<span class="badge badge-a">Último contato: ${fmtData(uc)} (${dias}d)</span>`:'<span class="badge badge-r">Sem registro de contato</span>'}
+          </div>
+          ${p.obs?`<div style="font-size:.72rem;opacity:.55;margin-top:4px">${p.obs}</div>`:''}
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          ${wppNum?`<a href="https://wa.me/${wppNum}"  class="btn btn-sm btn-g" style="text-decoration:none">💬 WhatsApp</a>`:''}
+          <button class="btn btn-sm btn-p" onclick="contatoPastoral('${p.id}')">✓ Contato hoje</button>
+          <button class="del-btn" onclick="delPastoral(${i})">✕</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addPastoral(){
+  const nome=document.getElementById('pa-nome').value.trim();if(!nome) return;
+  pastoral.push({id:'past_'+Date.now(),nome,sit:document.getElementById('pa-sit').value,igreja:document.getElementById('pa-igreja').value,wpp:document.getElementById('pa-wpp').value,obs:document.getElementById('pa-obs').value});
+  lss('min_pastoral',pastoral);renderPastoral();popularSelectPastoral();
+  ['pa-nome','pa-igreja','pa-wpp','pa-obs'].forEach(id=>document.getElementById(id).value='');
+}
+function delPastoral(i){pastoral.splice(i,1);lss('min_pastoral',pastoral);renderPastoral();popularSelectPastoral();}
+function contatoPastoral(id){lss('past_uc_'+id,hojeStr);renderPastoral();}
+
+function popularSelectPastoral(){
+  const opts='<option value="">— Selecione —</option>'+pastoral.map(p=>`<option value="${p.id}">${p.nome}</option>`).join('');
+  const el=document.getElementById('vi-pessoa');if(el)el.innerHTML=opts;
+}
+
+function renderVisitas(){
+  const tbody=document.getElementById('visitas-body');
+  const sorted=[...visitas].sort((a,b)=>b.data.localeCompare(a.data));
+  if(!sorted.length){tbody.innerHTML=`<tr><td colspan="6" style="color:#aaa;font-style:italic;font-size:.76rem;padding:10px">Nenhuma visita registrada.</td></tr>`;return;}
+  tbody.innerHTML=sorted.map(v=>{
+    const p=pastoral.find(x=>x.id===v.pessoa);
+    return `<tr>
+      <td>${fmtData(v.data)}</td>
+      <td><strong>${p?p.nome:v.pessoa||'—'}</strong></td>
+      <td><span class="badge badge-p">${v.tipo}</span></td>
+      <td>${v.obs||'—'}</td>
+      <td>${v.prox||'—'}</td>
+      <td><button class="del-btn" onclick="delVisita(${visitas.indexOf(v)})">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+document.getElementById('vi-data').value=hojeStr;
+function addVisita(){
+  const data=document.getElementById('vi-data').value;if(!data) return;
+  const pid=document.getElementById('vi-pessoa').value;
+  if(pid) lss('past_uc_'+pid,data);
+  visitas.unshift({data,pessoa:pid,tipo:document.getElementById('vi-tipo').value,obs:document.getElementById('vi-obs').value,prox:document.getElementById('vi-prox').value});
+  lss('min_visitas',visitas);renderVisitas();renderPastoral();
+  ['vi-obs','vi-prox'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('vi-data').value=hojeStr;
+}
+function delVisita(i){visitas.splice(i,1);lss('min_visitas',visitas);renderVisitas();}
+
+// ══ EVANGELISMO ══════════════════════════════════════
+
+let evan=ls('min_evan',[]);
+let acoesEvan=ls('min_acoes_evan',[]);
+
+const evStatus={contato:'badge-b',interesse:'badge-a',estudando:'badge-p',convertido:'badge-g',integrado:'badge-g',inativo:'badge-r'};
+const evLabel={contato:'Primeiro contato',interesse:'Interesse',estudando:'Estudando',convertido:'Convertido',integrado:'Integrado',inativo:'Sem contato'};
+
+function renderKPIsEvan(){
+  const t=evan.length;
+  const conv=evan.filter(e=>e.status==='convertido'||e.status==='integrado').length;
+  const estud=evan.filter(e=>e.status==='estudando').length;
+  const inat=evan.filter(e=>e.status==='inativo').length;
+  document.getElementById('kpi-evan').innerHTML=`
+    <div class="kpi"><div class="kpi-val" style="color:var(--area)">${t}</div><div class="kpi-lbl">Pessoas</div><div class="kpi-sub">alcançadas</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:#16a34a">${conv}</div><div class="kpi-lbl">Convertidos</div><div class="kpi-sub">integrados</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:#9333ea">${estud}</div><div class="kpi-lbl">Estudando</div><div class="kpi-sub">em processo</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:#ca8a04">${inat}</div><div class="kpi-lbl">Sem contato</div><div class="kpi-sub">reengajar</div></div>`;
+}
+
+function renderEvan(){
+  renderKPIsEvan();
+  const el=document.getElementById('evan-lista');
+  if(!evan.length){el.innerHTML=empty('Nenhuma pessoa registrada ainda.');return;}
+  el.innerHTML=evan.map((e,i)=>{
+    const wppNum=(e.wpp||'').replace(/\D/g,'');
+    return `<div class="item-row">
+      <span style="font-size:1.2rem">🌱</span>
+      <span class="nome" style="flex:1">${e.nome}</span>
+      <span class="badge ${evStatus[e.status]||'badge-b'}">${evLabel[e.status]||e.status}</span>
+      ${e.como?`<span class="det">${e.como}</span>`:''}
+      ${e.ult?`<span class="det">Último contato: ${fmtData(e.ult)}</span>`:''}
+      ${e.obs?`<span class="det" style="flex:1">${e.obs}</span>`:''}
+      ${wppNum?`<a href="https://wa.me/${wppNum}"  class="btn btn-sm btn-g" style="text-decoration:none">💬 WA</a>`:''}
+      <select onchange="mudarStatusEvan(${i},this.value)" class="sel" style="padding:2px 6px;font-size:.68rem;">
+        <option value="contato" ${e.status==='contato'?'selected':''}>1º contato</option>
+        <option value="interesse" ${e.status==='interesse'?'selected':''}>Interesse</option>
+        <option value="estudando" ${e.status==='estudando'?'selected':''}>Estudando</option>
+        <option value="convertido" ${e.status==='convertido'?'selected':''}>Convertido</option>
+        <option value="integrado" ${e.status==='integrado'?'selected':''}>Integrado</option>
+        <option value="inativo" ${e.status==='inativo'?'selected':''}>Sem contato</option>
+      </select>
+      <button class="del-btn" onclick="delEvan(${i})">✕</button>
+    </div>`;
+  }).join('');
+  // Ações
+  const ael=document.getElementById('acoes-evan-lista');
+  const sorted=[...acoesEvan].sort((a,b)=>b.data.localeCompare(a.data));
+  ael.innerHTML=sorted.length?sorted.map((a,i)=>`<div class="item-row">
+    <span style="font-size:1.2rem">📣</span>
+    <span class="det">${fmtData(a.data)}</span>
+    <span class="nome" style="flex:1">${a.desc}</span>
+    ${a.local?`<span class="det">📍 ${a.local}</span>`:''}
+    ${a.res?`<span class="badge badge-g">${a.res}</span>`:''}
+    <button class="del-btn" onclick="delAcaoEvan(${i})">✕</button>
+  </div>`).join(''):empty('Nenhuma ação evangelística registrada.');
+}
+document.getElementById('ev-ult').value=hojeStr;
+document.getElementById('ae-data').value=hojeStr;
+function addEvan(){
+  const nome=document.getElementById('ev-nome').value.trim();if(!nome) return;
+  evan.push({nome,status:document.getElementById('ev-status').value,como:document.getElementById('ev-como').value,wpp:document.getElementById('ev-wpp').value,ult:document.getElementById('ev-ult').value,obs:document.getElementById('ev-obs').value});
+  lss('min_evan',evan);renderEvan();
+  ['ev-nome','ev-como','ev-wpp','ev-obs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ev-ult').value=hojeStr;
+}
+function mudarStatusEvan(i,v){evan[i].status=v;lss('min_evan',evan);renderKPIsEvan();}
+function delEvan(i){evan.splice(i,1);lss('min_evan',evan);renderEvan();}
+function addAcaoEvan(){
+  const desc=document.getElementById('ae-desc').value.trim();if(!desc) return;
+  acoesEvan.unshift({desc,data:document.getElementById('ae-data').value,local:document.getElementById('ae-local').value,res:document.getElementById('ae-res').value});
+  lss('min_acoes_evan',acoesEvan);renderEvan();
+  ['ae-desc','ae-local','ae-res'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ae-data').value=hojeStr;
+}
+function delAcaoEvan(i){acoesEvan.splice(i,1);lss('min_acoes_evan',acoesEvan);renderEvan();}
+
+// ══ AGENDA & TAREFAS ═════════════════════════════════
+
+let agendaMin=ls('min_agenda',[]);
+let tarefasMin=ls('min_tarefas',[]);
+
+document.getElementById('am-data').value=hojeStr;
+
+function renderKPIsAgenda(){
+  const prox=agendaMin.filter(a=>(a.status==='confirmado'||a.status==='pendente')&&a.data>=hojeStr).length;
+  const tarPend=tarefasMin.filter(t=>t.status==='pendente').length;
+  const tarAlta=tarefasMin.filter(t=>t.status==='pendente'&&t.prior==='alta').length;
+  const realiz=agendaMin.filter(a=>a.status==='realizado').length;
+  document.getElementById('kpi-agenda').innerHTML=`
+    <div class="kpi"><div class="kpi-val" style="color:var(--area)">${prox}</div><div class="kpi-lbl">Próximos eventos</div><div class="kpi-sub">confirmados/pendentes</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:#ef4444">${tarAlta}</div><div class="kpi-lbl">Tarefas urgentes</div><div class="kpi-sub">prioridade alta</div></div>
+    <div class="kpi"><div class="kpi-val">${tarPend}</div><div class="kpi-lbl">Tarefas pendentes</div><div class="kpi-sub">no total</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:#16a34a">${realiz}</div><div class="kpi-lbl">Realizados</div><div class="kpi-sub">este registro</div></div>`;
+}
+
+function renderAgendaMin(){
+  renderKPIsAgenda();
+  const tbody=document.getElementById('ag-min-body');
+  const sorted=[...agendaMin].sort((a,b)=>a.data.localeCompare(b.data));
+  if(!sorted.length){tbody.innerHTML=`<tr><td colspan="7" style="color:#aaa;font-style:italic;font-size:.76rem;padding:10px">Nenhum evento registrado.</td></tr>`;return;}
+  const sb={confirmado:'badge-g',pendente:'badge-a',realizado:'badge-b',cancelado:'badge-r'};
+  tbody.innerHTML=sorted.map(a=>`<tr style="${a.data<hojeStr&&a.status!=='realizado'?'opacity:.6':''}">
+    <td><strong>${fmtData(a.data)}</strong>${a.hora?' '+a.hora:''}</td>
+    <td><strong>${a.evento}</strong></td>
+    <td><span class="badge badge-p">${a.tipo}</span></td>
+    <td>${a.local||'—'}</td>
+    <td>
+      <select onchange="mudarStatusAg(${agendaMin.indexOf(a)},this.value)" class="sel" style="padding:2px 6px;font-size:.68rem;">
+        <option value="confirmado" ${a.status==='confirmado'?'selected':''}>Confirmado</option>
+        <option value="pendente" ${a.status==='pendente'?'selected':''}>Pendente</option>
+        <option value="realizado" ${a.status==='realizado'?'selected':''}>Realizado</option>
+        <option value="cancelado" ${a.status==='cancelado'?'selected':''}>Cancelado</option>
+      </select>
+    </td>
+    <td>${a.obs||'—'}</td>
+    <td><button class="del-btn" onclick="delAgendaMin(${agendaMin.indexOf(a)})">✕</button></td>
+  </tr>`).join('');
+}
+function addAgendaMin(){
+  const evento=document.getElementById('am-evento').value.trim(),data=document.getElementById('am-data').value;
+  if(!evento||!data) return;
+  agendaMin.push({evento,data,hora:document.getElementById('am-hora').value,tipo:document.getElementById('am-tipo').value,local:document.getElementById('am-local').value,status:document.getElementById('am-status').value,obs:document.getElementById('am-obs').value});
+  lss('min_agenda',agendaMin);renderAgendaMin();
+  ['am-evento','am-local','am-obs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('am-data').value=hojeStr;
+}
+function mudarStatusAg(i,v){agendaMin[i].status=v;lss('min_agenda',agendaMin);renderAgendaMin();}
+function delAgendaMin(i){agendaMin.splice(i,1);lss('min_agenda',agendaMin);renderAgendaMin();}
+
+function renderTarefasMin(){
+  const el=document.getElementById('tarefas-min-lista');
+  const sorted=[...tarefasMin].sort((a,b)=>{const po={alta:0,media:1,baixa:2};return po[a.prior]-po[b.prior]||(a.prazo||'9').localeCompare(b.prazo||'9');});
+  if(!sorted.length){el.innerHTML=empty('Nenhuma tarefa ministerial registrada.');return;}
+  const pb={alta:'badge-r',media:'badge-a',baixa:'badge-g'};
+  el.innerHTML=sorted.map(t=>{
+    const ri=tarefasMin.indexOf(t);
+    const atrasada=t.prazo&&t.prazo<hojeStr&&t.status!=='feita';
+    return `<div class="item-row" style="${atrasada?'background:#fff5f5':''}">
+      <input type="checkbox" style="accent-color:var(--area);width:16px;height:16px" ${t.status==='feita'?'checked':''} onchange="toggleTarefaMin(${ri})">
+      <span class="nome" style="flex:1;${t.status==='feita'?'text-decoration:line-through;opacity:.5':''}">${t.txt}</span>
+      <span class="badge badge-p">${t.cat}</span>
+      <span class="badge ${pb[t.prior]}">${t.prior==='alta'?'⚡ Alta':t.prior==='media'?'Média':'Baixa'}</span>
+      ${t.prazo?`<span class="det ${atrasada?'color:#dc2626':''}">📅 ${fmtData(t.prazo)}${atrasada?' ⚠️':''}</span>`:''}
+      <button class="del-btn" onclick="delTarefaMin(${ri})">✕</button>
+    </div>`;
+  }).join('');
+}
+function addTarefaMin(){
+  const txt=document.getElementById('tm-txt').value.trim();if(!txt) return;
+  tarefasMin.push({txt,cat:document.getElementById('tm-cat').value,prazo:document.getElementById('tm-prazo').value,prior:document.getElementById('tm-prior').value,status:'pendente'});
+  lss('min_tarefas',tarefasMin);renderTarefasMin();renderKPIsAgenda();
+  document.getElementById('tm-txt').value='';document.getElementById('tm-prazo').value='';
+}
+function toggleTarefaMin(i){tarefasMin[i].status=tarefasMin[i].status==='feita'?'pendente':'feita';lss('min_tarefas',tarefasMin);renderTarefasMin();renderKPIsAgenda();}
+function delTarefaMin(i){tarefasMin.splice(i,1);lss('min_tarefas',tarefasMin);renderTarefasMin();renderKPIsAgenda();}
+
+// ── INIT ─────────────────────────────────
+renderKPIsPreg();
+renderPregacoes();
+renderKPIsPast();
+renderPastoral();
+renderVisitas();
+renderKPIsEvan();
+renderEvan();
+renderKPIsAgenda();
+renderAgendaMin();
+renderTarefasMin();
+</script>
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Reparo de Sincronização — Sistema Minha Vida</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .card { background: #1e293b; border-radius: 16px; padding: 36px; max-width: 600px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+  h1 { font-size: 1.4rem; color: #38bdf8; margin-bottom: 6px; }
+  .sub { font-size: .85rem; color: #64748b; margin-bottom: 24px; line-height: 1.5; }
+  .log { background: #0f172a; border-radius: 10px; padding: 16px; font-size: .8rem; line-height: 2; min-height: 100px; max-height: 260px; overflow-y: auto; font-family: monospace; }
+  .ok   { color: #4ade80; }
+  .err  { color: #f87171; }
+  .info { color: #60a5fa; }
+  .warn { color: #fbbf24; }
+  .progress { margin-top: 12px; background: #0f172a; border-radius: 99px; height: 6px; }
+  .progress-fill { height: 6px; background: #3b82f6; border-radius: 99px; width: 0; transition: width .3s; }
+  .btn-row { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+  button { flex: 1; padding: 13px; background: #3b82f6; color: #fff; border: none; border-radius: 8px; font-size: .95rem; font-weight: 600; cursor: pointer; transition: background .2s; min-width: 140px; }
+  button:hover:not(:disabled) { background: #2563eb; }
+  button:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+  button.sec { background: #334155; }
+  button.sec:hover:not(:disabled) { background: #475569; }
+  .summary { margin-top: 16px; padding: 14px 16px; border-radius: 8px; font-size: .88rem; line-height: 1.6; display: none; }
+  .summary.ok  { background: #14532d; color: #bbf7d0; }
+  .summary.err { background: #7f1d1d; color: #fecaca; }
+  .divider { border: none; border-top: 1px solid #334155; margin: 20px 0; }
+  .step-label { font-size: .78rem; color: #64748b; margin-bottom: 6px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+  .upload-area { border: 2px dashed #334155; border-radius: 10px; padding: 20px; text-align: center; color: #64748b; font-size: .85rem; cursor: pointer; transition: border-color .2s; }
+  .upload-area:hover { border-color: #3b82f6; color: #93c5fd; }
+  input[type=file] { display: none; }
+  #file-name { margin-top: 8px; font-size: .8rem; color: #38bdf8; min-height: 18px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🔧 Reparo de Dados Financeiros</h1>
+  <p class="sub">Restaura os dados financeiros do backup e envia para a nuvem (Supabase), tornando-os visíveis para Celso e Selma em qualquer dispositivo.</p>
+
+  <!-- Passo 1: Carregar backup -->
+  <div class="step-label">Passo 1 — Carregar arquivo de backup</div>
+  <label class="upload-area" for="backup-file" id="upload-label">
+    📂 Clique aqui para selecionar o backup<br><small>Arquivo: <em>backup_minha_vida_XXXX-XX-XX.json</em></small>
+    <div id="file-name"></div>
+  </label>
+  <input type="file" id="backup-file" accept=".json" onchange="onFileChange(this)">
+
+  <hr class="divider">
+
+  <!-- Log -->
+  <div class="step-label">Status</div>
+  <div class="log" id="log">Aguardando arquivo de backup...</div>
+  <div class="progress"><div class="progress-fill" id="bar"></div></div>
+  <div class="summary" id="summary"></div>
+
+  <!-- Botões -->
+  <div class="btn-row">
+    <button id="btn-restore" onclick="runRestore()" disabled>▶ Restaurar e Enviar para Nuvem</button>
+    <button class="sec" id="btn-local" onclick="runLocalOnly()" disabled>💾 Só Restaurar Local</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+var SUPABASE_URL = 'https://eatfoibrhaobcnpaorlo.supabase.co';
+var ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhdGZvaWJyaGFvYmNucGFvcmxvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNDQ4MTMsImV4cCI6MjA5NjcyMDgxM30.phRBbUJ92yAo62DvuUbDYUqTlUD-jkxo9U0PHZF_x7U';
+var SHARED_PREFIXES = ['fin_', 'agenda_'];
+var IGNORE_PREFIXES = ['sb-', 'supabase', 'debug_', 'theme_', 'ui_', 'mv_ctrl_'];
+
+var db = supabase.createClient(SUPABASE_URL, ANON);
+var backupData = null;
+var logEl = document.getElementById('log');
+var barEl = document.getElementById('bar');
+var summaryEl = document.getElementById('summary');
+
+function log(msg, cls) {
+  var line = document.createElement('div');
+  if (cls) line.className = cls;
+  line.textContent = msg;
+  logEl.appendChild(line);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+function clearLog() { logEl.innerHTML = ''; summaryEl.style.display = 'none'; }
+function setBar(pct) { barEl.style.width = pct + '%'; }
+
+async function getAccessToken() {
+  try {
+    // Usa o SDK para garantir token sempre válido (auto-renova se necessário)
+    var resp = await db.auth.getSession();
+    return resp.data.session ? resp.data.session.access_token : null;
+  } catch(e) { return null; }
+}
+
+function onFileChange(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      backupData = JSON.parse(e.target.result);
+      var finKeys = Object.keys(backupData).filter(k => SHARED_PREFIXES.some(p => k.startsWith(p)));
+      document.getElementById('file-name').textContent = '✅ ' + file.name + ' — ' + finKeys.length + ' chaves financeiras encontradas';
+      document.getElementById('btn-restore').disabled = false;
+      document.getElementById('btn-local').disabled = false;
+      clearLog();
+      log('Arquivo carregado: ' + file.name, 'ok');
+      log('Total de chaves no backup: ' + Object.keys(backupData).length, 'info');
+      log('Chaves financeiras/agenda: ' + finKeys.join(', '), 'info');
+    } catch(err) {
+      log('❌ Arquivo inválido: ' + err.message, 'err');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// Restaura só no localStorage (sem enviar para nuvem)
+async function runLocalOnly() {
+  if (!backupData) return;
+  clearLog();
+  log('Restaurando dados no localStorage local...', 'info');
+  var count = 0;
+  Object.entries(backupData).forEach(function([k, v]) {
+    var isIgnored = IGNORE_PREFIXES.some(p => k.startsWith(p));
+    if (isIgnored) return;
+    // Salva sem trigger do push (usa setItem nativo)
+    try { localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v)); count++; } catch(e) {}
+  });
+  log('✅ ' + count + ' chaves restauradas no localStorage.', 'ok');
+  log('Abra o Dashboard Financeiro — os dados devem aparecer.', 'ok');
+  showSummary('ok', '✅ ' + count + ' chaves restauradas localmente. Abra o Dashboard Financeiro agora.');
+}
+
+// Restaura no localStorage E envia para a nuvem
+async function runRestore() {
+  if (!backupData) return;
+  document.getElementById('btn-restore').disabled = true;
+  document.getElementById('btn-local').disabled = true;
+  clearLog();
+  setBar(0);
+
+  // 1. Verificar token
+  log('🔐 Verificando autenticação...', 'info');
+  var token = await getAccessToken();
+  if (!token) {
+    log('⚠️ Sessão não encontrada. Abrindo login...', 'warn');
+    await new Promise(function(r){ setTimeout(r, 1500); });
+    window.location.href = 'login.html';
+    return;
+  }
+  log('✅ Sessão válida.', 'ok');
+  setBar(10);
+
+  // 2. Filtrar chaves compartilhadas do backup
+  var sharedEntries = Object.entries(backupData).filter(function([k]) {
+    return SHARED_PREFIXES.some(p => k.startsWith(p)) && !IGNORE_PREFIXES.some(p => k.startsWith(p));
+  });
+  var otherEntries = Object.entries(backupData).filter(function([k]) {
+    return !SHARED_PREFIXES.some(p => k.startsWith(p)) && !IGNORE_PREFIXES.some(p => k.startsWith(p));
+  });
+
+  log('📦 ' + sharedEntries.length + ' chaves compartilhadas (fin_/agenda_): para shared_data', 'info');
+  log('📦 ' + otherEntries.length + ' chaves pessoais: para localStorage local', 'info');
+  setBar(15);
+
+  // 3. Restaurar TODAS as chaves no localStorage local
+  var localCount = 0;
+  Object.entries(backupData).forEach(function([k, v]) {
+    if (IGNORE_PREFIXES.some(p => k.startsWith(p))) return;
+    try { localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v)); localCount++; } catch(e) {}
+  });
+  log('💾 ' + localCount + ' chaves restauradas no localStorage local.', 'ok');
+  setBar(30);
+
+  // 4. Enviar chaves compartilhadas para shared_data no Supabase
+  log('☁️ Enviando dados compartilhados para a nuvem...', 'info');
+  var ok = 0, fail = 0, failKeys = [];
+
+  for (var i = 0; i < sharedEntries.length; i++) {
+    var [key, rawVal] = sharedEntries[i];
+    var value;
+    try { value = typeof rawVal === 'string' ? JSON.parse(rawVal) : rawVal; } catch(e) { value = rawVal; }
+
+    // Usa o SDK do Supabase — upsert correto com onConflict
+    var result = await db.from('shared_data').upsert({ key: key, value: value }, { onConflict: 'key' });
+
+    if (!result.error) {
+      log('  ✅ ' + key, 'ok');
+      ok++;
+    } else {
+      log('  ❌ ' + key + ' → ' + result.error.message, 'err');
+      fail++;
+      failKeys.push(key);
+    }
+    setBar(30 + Math.round(65 * (i+1) / sharedEntries.length));
+  }
+
+  // 5. Enviar chaves pessoais para personal_data
+  // (não crítico para o compartilhamento, mas bom para backup)
+  var user = null;
+  try {
+    var sess = await db.auth.getSession();
+    if (sess.data.session) user = sess.data.session.user.id;
+  } catch(e) {}
+
+  if (user && otherEntries.length > 0) {
+    log('☁️ Enviando dados pessoais para a nuvem...', 'info');
+    for (var j = 0; j < otherEntries.length; j++) {
+      var [pKey, pRaw] = otherEntries[j];
+      var pVal;
+      try { pVal = typeof pRaw === 'string' ? JSON.parse(pRaw) : pRaw; } catch(e) { pVal = pRaw; }
+      await db.from('personal_data').upsert({ user_id: user, key: pKey, value: pVal }, { onConflict: 'user_id,key' });
+    }
+    log('✅ Dados pessoais enviados.', 'ok');
+  }
+
+  setBar(100);
+
+  // 6. Resultado final
+  if (fail === 0) {
+    showSummary('ok', '🎉 Tudo certo! ' + ok + ' chaves financeiras enviadas para a nuvem. Celso e Selma já podem abrir o Dashboard Financeiro e ver os dados.');
+    log('', '');
+    log('🎉 Reparo completo! Abra o Dashboard Financeiro.', 'ok');
+  } else {
+    showSummary('err', '⚠️ ' + ok + ' chaves enviadas, ' + fail + ' com falha (' + failKeys.join(', ') + '). Os dados foram restaurados localmente — veja os erros acima.');
+    log('⚠️ Falhas ao enviar: ' + failKeys.join(', '), 'warn');
+  }
+
+  document.getElementById('btn-restore').disabled = false;
+  document.getElementById('btn-local').disabled = false;
+}
+
+function showSummary(type, msg) {
+  summaryEl.className = 'summary ' + type;
+  summaryEl.textContent = msg;
+  summaryEl.style.display = 'block';
+}
+</script>
+</body>
+</html>

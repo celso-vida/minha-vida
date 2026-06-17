@@ -1,0 +1,29 @@
+# Arquivos sensíveis — NÃO commitar
+CELSO_MEMORIA.md
+CLAUDE.md
+3W_HOTELARIA_MEMORIA.md
+PROXIMOS_PASSOS.md
+LEIA-ME.txt
+
+# Scripts com tokens/credenciais — NUNCA commitar
+deploy_vercel.ps1
+extrair_orcamentos_wix.ps1
+git_setup.ps1
+*.ps1
+
+# Backups e dados pessoais
+backup_*.json
+*.xlsx
+*.docx
+*.pdf
+
+# Fotos e imagens pessoais (exceto ícones do app)
+foto-celso.jpg.png
+3W arte do logo.png
+
+# Ferramentas internas (não precisam estar no GitHub)
+debug-ls.html
+
+# Sistema
+.DS_Store
+Thumbs.db

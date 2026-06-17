@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="theme-color" content="#1e3a5f">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Devocional — Celso</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-sync.js?v=4"></script>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#DBDBDB; --primary:#1A4168; --area:#5B9BD5; --area-dark:#2e6da4;
+  --white:#fff; --border:#c0c8d0; --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--primary);min-height:100vh;padding:18px 14px 60px;}
+
+/* ── HEADER ── */
+header{display:flex;align-items:center;gap:14px;max-width:1100px;margin:0 auto 20px;flex-wrap:wrap;}
+.back-btn{background:var(--area);color:#fff;border:none;border-radius:9px;padding:7px 14px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
+.back-btn:hover{opacity:.85;}
+.header-title{font-family:'Caveat',cursive;font-size:2rem;font-weight:700;color:var(--primary);}
+.header-sub{font-size:.78rem;color:var(--primary);opacity:.55;margin-top:2px;}
+#datahoje{font-size:.8rem;color:var(--primary);opacity:.6;margin-left:auto;}
+
+/* ── BLOCOS ── */
+.sec-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.13em;color:var(--primary);font-weight:700;opacity:.5;max-width:1100px;margin:0 auto 6px;padding-left:2px;}
+.block{background:var(--white);border-radius:var(--radius);padding:16px 18px;max-width:1100px;margin:0 auto 16px;border:1px solid var(--border);}
+.block-title{font-size:.85rem;color:var(--primary);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--bg);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.add-btn{background:var(--area);color:#fff;border:none;border-radius:7px;padding:5px 13px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:inherit;}
+.add-btn:hover{opacity:.85;}
+.add-btn.sec{background:#f0f4f8;color:var(--primary);border:1px solid var(--border);}
+.add-btn.sec:hover{background:#dde3ea;}
+.add-btn.danger{background:#ef4444;}
+.input-std{background:#f0f4f8;border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:.78rem;font-family:inherit;color:var(--primary);}
+.input-std:focus{outline:none;border-color:var(--area);}
+.sel-std{background:#f0f4f8;border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:.76rem;font-family:inherit;color:var(--primary);cursor:pointer;}
+.empty-msg{font-size:.8rem;color:#aaa;font-style:italic;}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.tag{font-size:.65rem;font-weight:700;padding:2px 9px;border-radius:20px;color:#fff;white-space:nowrap;}
+
+/* ── STATUS BADGES ── */
+.st-pendente  {background:#94a3b8;color:#fff;}
+.st-parcial   {background:#f59e0b;color:#fff;}
+.st-concluido {background:#22c55e;color:#fff;}
+.st-alterado  {background:#8b5cf6;color:#fff;}
+.st-adiado    {background:#ef4444;color:#fff;}
+
+/* ── LEITURA BÍBLICA ── */
+.plano-card{background:#f8f9fb;border:1px solid var(--border);border-radius:11px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:box-shadow .15s;}
+.plano-card:hover{box-shadow:0 2px 12px rgba(26,65,104,.12);}
+.plano-card-header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.plano-card-nome{font-size:.9rem;font-weight:800;color:var(--primary);flex:1;}
+.plano-progress{height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;margin-top:8px;}
+.plano-progress-bar{height:100%;background:var(--area);border-radius:3px;transition:width .3s;}
+.leitura-stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+.stat-box{background:#f0f4f8;border-radius:9px;padding:10px 14px;text-align:center;min-width:80px;}
+.stat-num{font-size:1.4rem;font-weight:800;color:var(--area-dark);}
+.stat-lbl{font-size:.65rem;opacity:.6;text-transform:uppercase;letter-spacing:.06em;}
+.leitura-list{list-style:none;}
+.leitura-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;margin-bottom:6px;background:#f8f9fb;border:1px solid var(--border);font-size:.82rem;flex-wrap:wrap;}
+.leitura-data{font-size:.7rem;color:#888;min-width:70px;}
+.leitura-passagem{flex:1;font-weight:600;color:var(--primary);}
+.status-btns{display:flex;gap:4px;flex-wrap:wrap;}
+.st-btn{border:none;border-radius:6px;padding:3px 9px;font-size:.65rem;font-weight:700;cursor:pointer;font-family:inherit;opacity:.4;transition:opacity .15s;}
+.st-btn:hover{opacity:.7;}
+.st-btn.ativo{opacity:1;}
+.hoje-badge{background:var(--area);color:#fff;border-radius:6px;padding:2px 8px;font-size:.65rem;font-weight:700;}
+
+/* ── ORAÇÃO ── */
+.cat-tag-intercessao{background:#6366f1;}
+.cat-tag-agradecimento{background:#16a34a;}
+.cat-tag-confissao{background:#dc2626;}
+.cat-tag-suplica{background:#f97316;}
+.cat-tag-adoracao{background:#ec4899;}
+.cat-tag-outros{background:#64748b;}
+.oracao-item{display:flex;gap:10px;padding:10px 12px;border-radius:10px;margin-bottom:7px;background:#f8f9fb;border:1px solid var(--border);flex-wrap:wrap;align-items:flex-start;}
+.oracao-body{flex:1;}
+.oracao-txt{font-size:.83rem;font-weight:600;color:var(--primary);margin-bottom:3px;}
+.oracao-meta{font-size:.7rem;color:#888;}
+.oracao-acoes{display:flex;flex-direction:column;gap:4px;align-items:flex-end;}
+.oracao-dia-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:#eef6ff;border:1px solid #93c5fd;font-size:.8rem;margin-bottom:5px;}
+
+/* ── LIVROS ── */
+.mes-nav{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.mes-nav-btn{background:#f0f4f8;border:1px solid var(--border);border-radius:6px;padding:3px 12px;font-size:.82rem;cursor:pointer;color:var(--primary);font-weight:700;}
+.mes-nav-btn:hover{background:#dde3ea;}
+.mes-titulo{font-size:.9rem;font-weight:800;color:var(--primary);flex:1;}
+.livro-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;margin-bottom:6px;background:#f8f9fb;border:1px solid var(--border);}
+.livro-capa{width:36px;height:48px;border-radius:5px;background:var(--area);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+.livro-body{flex:1;}
+.livro-titulo{font-size:.84rem;font-weight:700;color:var(--primary);}
+.livro-autor{font-size:.72rem;color:#666;}
+.livro-progress{margin-top:5px;height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden;}
+.livro-progress-bar{height:100%;background:var(--area);border-radius:3px;transition:width .3s;}
+.livro-pct{font-size:.68rem;color:#888;margin-top:2px;}
+
+/* ── SANTIFICAÇÃO ── */
+.sant-semana{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;}
+@media(max-width:600px){.sant-semana{grid-template-columns:1fr;}}
+.sant-area-sel{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.sant-area-btn{border:2px solid var(--border);border-radius:9px;padding:6px 13px;font-size:.75rem;font-weight:700;cursor:pointer;background:#f0f4f8;color:var(--primary);font-family:inherit;transition:all .15s;}
+.sant-area-btn.ativo{background:var(--area);color:#fff;border-color:var(--area);}
+.versic-box{background:#f0f6ff;border:2px solid var(--area);border-radius:10px;padding:14px 16px;}
+.versic-texto{font-size:.9rem;font-style:italic;line-height:1.65;color:var(--primary);margin-bottom:6px;}
+.versic-ref{font-size:.75rem;font-weight:700;color:var(--area-dark);opacity:.8;}
+.versic-input{width:100%;background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:.82rem;font-family:inherit;color:var(--primary);min-height:70px;resize:none;}
+.versic-input:focus{outline:none;border-color:var(--area);}
+.sync-badge{background:#dcfce7;border:1px solid #86efac;border-radius:6px;padding:3px 10px;font-size:.68rem;font-weight:700;color:#15803d;}
+
+/* ── FOTO DA ÁREA ─────────────────────────────────── */
+.area-foto-wrap{
+  flex-shrink:0; cursor:pointer; position:relative;
+  border-radius:14px; overflow:hidden;
+  border:2px solid var(--border);
+  box-shadow:0 4px 16px rgba(0,0,0,.13);
+  transition:transform .2s, box-shadow .2s;
+  width:210px; height:130px;
+  background:var(--area);
+}
+.area-foto-wrap:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.18);}
+.area-foto-wrap:hover .area-foto-overlay{opacity:1;}
+.area-foto-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;border-radius:12px;z-index:1;}
+.area-foto-placeholder{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  z-index:0;
+}
+.area-foto-placeholder-icon{font-size:2.2rem;opacity:.45;}
+.area-foto-placeholder-txt{font-size:.7rem;font-weight:700;color:#fff;opacity:.55;text-transform:uppercase;letter-spacing:.08em;}
+.area-foto-overlay{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,.48);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s;
+  border-radius:12px;
+  z-index:2;
+}
+.area-foto-overlay span{
+  color:#fff;font-size:.78rem;font-weight:700;
+  background:rgba(255,255,255,.18);
+  padding:6px 14px;border-radius:20px;
+  border:1px solid rgba(255,255,255,.3);
+}
+@media(max-width:600px){.area-foto-wrap{width:100%;height:100px;}}
+
+</style>
+
+<script>
+(function(){
+  var src=localStorage.getItem('foto_perfil');
+  if(!src)return;
+  var lnk=document.querySelector('link[rel~="icon"]');
+  if(!lnk){lnk=document.createElement('link');lnk.rel='icon';document.head.appendChild(lnk);}
+  lnk.href=src;
+})();
+</script>
+</head>
+<body>
+
+<header>
+  <a class="back-btn" href="DASHBOARD_GERAL.html">← Painel Geral</a>
+  <div>
+    <div class="header-title">Devocional</div>
+    <div class="header-sub">Área 1 — Vida com Deus</div>
+  </div>
+  <div id="datahoje"></div>
+  <div class="area-foto-wrap" onclick="document.getElementById('af-input').click()" title="Clique para adicionar ou trocar a foto">
+    <img id="af-img" class="area-foto-img" src="" alt="Foto da área">
+    <div id="af-ph" class="area-foto-placeholder">
+      <div class="area-foto-placeholder-icon">🙏</div>
+      <div class="area-foto-placeholder-txt">Adicionar foto</div>
+    </div>
+    <div class="area-foto-overlay"><span>📷 Trocar foto</span></div>
+    <input type="file" id="af-input" accept="image/*" style="display:none" onchange="loadAreaFoto(this)">
+  </div>
+  <button onclick="mvSignOut()" title="Sair" style="margin-left:auto;background:#dc2626;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:0.85rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.25)">🚪 Sair</button>
+</header>
+
+<!-- ══ PLANO DE LEITURA BÍBLICA ═══════════════════════════ -->
+<div class="sec-label">Plano de Leitura Bíblica</div>
+<div class="block">
+  <div class="block-title">
+    <span>📖 Plano de Leitura Bíblica</span>
+    <button class="add-btn" onclick="novoPlano()">+ Novo Plano</button>
+  </div>
+
+  <!-- Leitura de Hoje (todos os planos) -->
+  <div style="margin-bottom:16px;">
+    <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.5;margin-bottom:6px;">📅 Leitura de Hoje</div>
+    <div id="leitura-hoje"></div>
+  </div>
+
+  <!-- Vista: Lista de Planos -->
+  <div id="vista-planos">
+    <div id="planos-list"></div>
+  </div>
+
+  <!-- Vista: Detalhe de um Plano -->
+  <div id="vista-detalhe" style="display:none;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+      <button class="add-btn sec" onclick="voltarPlanos()">← Voltar</button>
+      <span id="detalhe-nome" style="font-size:1rem;font-weight:800;color:var(--primary);flex:1;"></span>
+      <button class="add-btn sec" onclick="editarNomePlano()">✏️ Renomear</button>
+      <button class="add-btn danger" onclick="deletarPlano()">✕ Excluir</button>
+    </div>
+
+    <div class="leitura-stats" id="detalhe-stats"></div>
+
+    <div style="margin-bottom:12px;">
+      <button class="add-btn" onclick="toggleFormBloco()">+ Adicionar passagens em bloco</button>
+    </div>
+
+    <!-- Form bloco -->
+    <div id="form-bloco" style="display:none;background:#f0f4f8;border-radius:11px;padding:16px;margin-bottom:14px;">
+      <div style="font-size:.75rem;font-weight:700;color:var(--primary);margin-bottom:6px;">Cole as passagens — uma por linha.</div>
+      <div style="font-size:.72rem;color:#666;margin-bottom:10px;">Use intervalos como <strong>João 1-21</strong> ou <strong>Efésios 1-6</strong> e o sistema expande automaticamente.</div>
+      <textarea class="input-std" id="bloco-passagens" style="width:100%;min-height:110px;resize:vertical;margin-bottom:10px;" placeholder="Ex:&#10;Romanos 1-16&#10;Gálatas 1-6&#10;Efésios 1-6&#10;ou passagens avulsas:&#10;Apocalipse 1&#10;Apocalipse 2-3"></textarea>
+      <div class="row" style="gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+        <div>
+          <div style="font-size:.7rem;opacity:.6;margin-bottom:3px;">Data de início</div>
+          <input class="input-std" id="bloco-data" type="date" style="width:150px;">
+        </div>
+        <div>
+          <div style="font-size:.7rem;opacity:.6;margin-bottom:3px;">Data de término</div>
+          <input class="input-std" id="bloco-datafim" type="date" style="width:150px;">
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <input type="checkbox" id="bloco-skip-dom" checked style="width:15px;height:15px;cursor:pointer;">
+        <label for="bloco-skip-dom" style="font-size:.75rem;color:var(--primary);cursor:pointer;font-weight:600;">Pular domingos</label>
+        <span style="font-size:.7rem;color:#888;">(as passagens serão distribuídas apenas nos outros dias)</span>
+      </div>
+      <div style="font-size:.7rem;color:#666;margin-bottom:8px;">Passagens não concluídas até a data prevista aparecerão como pendências.</div>
+      <div id="bloco-preview" style="display:none;margin-bottom:10px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px;">
+        <div style="font-size:.68rem;font-weight:700;opacity:.5;text-transform:uppercase;margin-bottom:6px;">Prévia (primeiras 8 entradas):</div>
+        <div id="bloco-preview-lista" style="font-size:.78rem;color:var(--primary);"></div>
+      </div>
+      <div class="row" style="gap:7px;">
+        <button class="add-btn sec" onclick="previewBloco()">👁 Prévia</button>
+        <button class="add-btn" onclick="salvarBloco()">✅ Adicionar ao plano</button>
+        <button class="add-btn sec" onclick="toggleFormBloco()">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- Filtro passagens -->
+    <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+      <span style="font-size:.7rem;font-weight:700;opacity:.5;text-transform:uppercase;">Filtrar:</span>
+      <select class="sel-std" id="filtro-passagens" onchange="renderDetalhe()" style="font-size:.7rem;padding:3px 7px;">
+        <option value="todos">Todos</option>
+        <option value="pendente">Pendente</option>
+        <option value="parcial">Parcial</option>
+        <option value="concluido">Concluído</option>
+        <option value="alterado">Alterado</option>
+        <option value="adiado">Adiado</option>
+      </select>
+    </div>
+
+    <ul class="leitura-list" id="detalhe-list"></ul>
+  </div>
+</div>
+
+<!-- ══ MOTIVOS DE ORAÇÃO ══════════════════════════════════ -->
+<div class="sec-label">Oração</div>
+<div class="block">
+  <div class="block-title">
+    <span>🙏 Lista de Oração do Dia</span>
+  </div>
+  <div id="oracao-hoje-list"></div>
+</div>
+
+<div class="block">
+  <div class="block-title">
+    <span>📋 Motivos de Oração</span>
+    <button class="add-btn" onclick="toggleFormOracao()">+ Adicionar</button>
+  </div>
+
+  <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;">
+    <button class="add-btn sec" id="of-todos" onclick="setFiltroOracao('todos')">Todos</button>
+    <button class="add-btn sec" id="of-ativos" onclick="setFiltroOracao('ativos')">Ativos hoje</button>
+    <button class="add-btn sec" id="of-intercessao" onclick="setFiltroOracao('Intercessão')">Intercessão</button>
+    <button class="add-btn sec" id="of-agradecimento" onclick="setFiltroOracao('Agradecimento')">Agradecimento</button>
+    <button class="add-btn sec" id="of-confissao" onclick="setFiltroOracao('Confissão')">Confissão</button>
+    <button class="add-btn sec" id="of-suplica" onclick="setFiltroOracao('Súplica')">Súplica</button>
+    <button class="add-btn sec" id="of-adoracao" onclick="setFiltroOracao('Adoração')">Adoração</button>
+  </div>
+
+  <div id="oracao-list"></div>
+
+  <!-- Form -->
+  <div id="form-oracao" style="display:none;margin-top:14px;padding-top:12px;border-top:2px solid var(--bg);">
+    <div class="row" style="gap:7px;flex-wrap:wrap;margin-bottom:8px;">
+      <textarea class="input-std" id="o-texto" placeholder="Motivo de oração..." style="width:100%;min-height:60px;resize:vertical;"></textarea>
+    </div>
+    <div class="row" style="gap:7px;flex-wrap:wrap;">
+      <select class="sel-std" id="o-cat">
+        <option value="Intercessão">Intercessão</option>
+        <option value="Agradecimento">Agradecimento</option>
+        <option value="Confissão">Confissão</option>
+        <option value="Súplica">Súplica</option>
+        <option value="Adoração">Adoração</option>
+        <option value="Outros">Outros</option>
+      </select>
+      <span style="font-size:.75rem;opacity:.6;">Período:</span>
+      <input class="input-std" id="o-inicio" type="date" style="width:135px">
+      <span style="font-size:.75rem;opacity:.6;">até</span>
+      <input class="input-std" id="o-fim" type="date" style="width:135px">
+      <span style="font-size:.72rem;opacity:.5;">(vazio = sem prazo)</span>
+      <button class="add-btn" onclick="saveOracao()">Salvar</button>
+      <button class="add-btn sec" onclick="toggleFormOracao()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PLANO DE LEITURA DE LIVROS ════════════════════════ -->
+<div class="sec-label">Leitura de Livros</div>
+<div class="block">
+  <div class="block-title">
+    <span>📚 Plano Mensal de Livros</span>
+    <button class="add-btn" onclick="toggleFormLivro()">+ Adicionar livro</button>
+  </div>
+
+  <div class="mes-nav">
+    <button class="mes-nav-btn" onclick="mudarMesLivros(-1)">‹</button>
+    <span class="mes-titulo" id="livros-mes-titulo"></span>
+    <button class="mes-nav-btn" onclick="mudarMesLivros(1)">›</button>
+  </div>
+
+  <div id="livros-list"></div>
+
+  <!-- Form -->
+  <div id="form-livro" style="display:none;margin-top:14px;padding-top:12px;border-top:2px solid var(--bg);">
+    <div class="row" style="gap:7px;flex-wrap:wrap;">
+      <input class="input-std" id="liv-titulo" type="text" placeholder="Título do livro" style="flex:1;min-width:160px">
+      <input class="input-std" id="liv-autor" type="text" placeholder="Autor" style="flex:1;min-width:130px">
+      <input class="input-std" id="liv-pct" type="number" min="0" max="100" value="0" placeholder="% lido" style="width:80px">
+      <select class="sel-std" id="liv-tipo">
+        <option value="Teologia">Teologia</option>
+        <option value="Devocional">Devocional</option>
+        <option value="Bíblia">Bíblia</option>
+        <option value="Geral">Geral</option>
+      </select>
+      <button class="add-btn" onclick="saveLivro()">Salvar</button>
+      <button class="add-btn sec" onclick="toggleFormLivro()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FOCO DE SANTIFICAÇÃO SEMANAL ═════════════════════ -->
+<div class="sec-label">Santificação Semanal</div>
+<div class="block">
+  <div class="block-title">
+    <span>✨ Foco de Santificação — Semana Atual</span>
+    <span class="sync-badge">🔗 Sincroniza com Painel Geral</span>
+  </div>
+
+  <div style="margin-bottom:12px;">
+    <div style="font-size:.72rem;font-weight:700;opacity:.5;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Área de Foco desta Semana</div>
+    <div class="sant-area-sel" id="sant-area-sel">
+      <button class="sant-area-btn" data-area="Devocional"         onclick="setSantArea(this)">🙏 Devocional</button>
+      <button class="sant-area-btn" data-area="Pessoal"            onclick="setSantArea(this)">👤 Pessoal</button>
+      <button class="sant-area-btn" data-area="Familiar"           onclick="setSantArea(this)">👨‍👩‍👧 Familiar</button>
+      <button class="sant-area-btn" data-area="Financeiro"         onclick="setSantArea(this)">💰 Financeiro</button>
+      <button class="sant-area-btn" data-area="Profissional"       onclick="setSantArea(this)">🏢 Profissional</button>
+      <button class="sant-area-btn" data-area="Ministerial"        onclick="setSantArea(this)">⛪ Ministerial</button>
+      <button class="sant-area-btn" data-area="Social"             onclick="setSantArea(this)">🌐 Social</button>
+    </div>
+  </div>
+
+  <div class="sant-semana">
+    <div>
+      <div style="font-size:.72rem;font-weight:700;opacity:.5;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Reflexão / Propósito da Semana</div>
+      <textarea class="input-std" id="sant-reflexao" style="width:100%;min-height:80px;resize:vertical;" placeholder="Descreva o foco de santificação desta semana..."></textarea>
+      <button class="add-btn" style="margin-top:8px" onclick="salvarSant()">Salvar</button>
+    </div>
+    <div>
+      <div style="font-size:.72rem;font-weight:700;opacity:.5;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">
+        Versículo da Semana
+        <span class="sync-badge" style="margin-left:6px;">→ Painel Geral</span>
+      </div>
+      <div class="versic-box" id="versic-preview" style="margin-bottom:10px;display:none;">
+        <div class="versic-texto" id="versic-preview-txt"></div>
+        <div class="versic-ref" id="versic-preview-ref"></div>
+      </div>
+      <textarea class="input-std" id="sant-versiculo" style="width:100%;resize:none;min-height:55px;" placeholder="Texto do versículo..."></textarea>
+      <input class="input-std" id="sant-versiculo-ref" type="text" placeholder="Referência (ex: Rm 12:1-2)" style="width:100%;margin-top:6px;">
+      <button class="add-btn" style="margin-top:8px" onclick="salvarVersiculo()">💾 Salvar e sincronizar</button>
+    </div>
+  </div>
+
+  <!-- Histórico de santificação -->
+  <div style="margin-top:18px;border-top:2px solid var(--bg);padding-top:14px;">
+    <div style="font-size:.72rem;font-weight:700;opacity:.5;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Histórico</div>
+    <div id="sant-historico"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const hoje=new Date();
+const hojeStr=hoje.toISOString().slice(0,10);
+const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+document.getElementById('datahoje').textContent=
+  hoje.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+
+// ── HELPER ────────────────────────────────────────────
+function save(k,v){localStorage.setItem(k,JSON.stringify(v));}
+function load(k,def=[]){try{return JSON.parse(localStorage.getItem(k)||'null')||def;}catch{return def;}}
+
+// ══ LEITURA BÍBLICA ══════════════════════════════════
+let planos=load('dev_planos',[]);
+let planoAtivoId=null;
+
+const STATUS_L=[
+  {id:'pendente',  label:'Pendente',  cls:'st-pendente'},
+  {id:'parcial',   label:'Parcial',   cls:'st-parcial'},
+  {id:'concluido', label:'Concluído', cls:'st-concluido'},
+  {id:'alterado',  label:'Alterado',  cls:'st-alterado'},
+  {id:'adiado',    label:'Adiado',    cls:'st-adiado'},
+];
+
+function salvarPlanos(){save('dev_planos',planos);}
+
+function novoPlano(){
+  const nome=prompt('Nome do novo plano de leitura:');
+  if(!nome||!nome.trim())return;
+  planos.push({id:Date.now(),nome:nome.trim(),passagens:[]});
+  salvarPlanos();renderPlanosList();
+}
+function editarNomePlano(){
+  const p=planos.find(x=>x.id===planoAtivoId);if(!p)return;
+  const n=prompt('Novo nome:',p.nome);
+  if(n&&n.trim()){p.nome=n.trim();salvarPlanos();renderDetalhe();}
+}
+function deletarPlano(){
+  const p=planos.find(x=>x.id===planoAtivoId);if(!p)return;
+  if(!confirm('Excluir o plano "'+p.nome+'" e todas as suas passagens?'))return;
+  planos=planos.filter(x=>x.id!==planoAtivoId);
+  salvarPlanos();voltarPlanos();
+}
+function verPlano(id){
+  planoAtivoId=id;
+  document.getElementById('vista-planos').style.display='none';
+  document.getElementById('vista-detalhe').style.display='block';
+  renderDetalhe();
+}
+function voltarPlanos(){
+  planoAtivoId=null;
+  document.getElementById('vista-detalhe').style.display='none';
+  document.getElementById('vista-planos').style.display='block';
+  renderPlanosList();
+}
+function toggleFormBloco(){
+  const f=document.getElementById('form-bloco');
+  f.style.display=f.style.display==='none'?'block':'none';
+  if(f.style.display==='block'){
+    document.getElementById('bloco-data').value=hojeStr;
+    document.getElementById('bloco-datafim').value='';
+    document.getElementById('bloco-preview').style.display='none';
+  }
+}
+function expandirPassagens(texto){
+  const linhas=texto.split('\n').map(l=>l.trim()).filter(l=>l);
+  const resultado=[];
+  for(const linha of linhas){
+    const m=linha.match(/^(.+?)\s+(\d+)-(\d+)$/);
+    if(m){
+      const livro=m[1].trim();
+      const ini=parseInt(m[2]);
+      const fim=parseInt(m[3]);
+      if(fim>=ini&&(fim-ini)<300){
+        for(let c=ini;c<=fim;c++)resultado.push(livro+' '+c);
+        continue;
+      }
+    }
+    resultado.push(linha);
+  }
+  return resultado;
+}
+function addDias(dataStr,dias){
+  const d=new Date(dataStr+'T12:00:00');
+  d.setDate(d.getDate()+dias);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function diasUteisEntreDatas(dataInicio,dataFim,skipDom){
+  // Gera lista de datas válidas entre inicio e fim
+  const dias=[];
+  const cur=new Date(dataInicio+'T12:00:00');
+  const end=new Date(dataFim+'T12:00:00');
+  while(cur<=end){
+    if(!skipDom||cur.getDay()!==0){
+      dias.push(cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0')+'-'+String(cur.getDate()).padStart(2,'0'));
+    }
+    cur.setDate(cur.getDate()+1);
+  }
+  return dias;
+}
+function distribuirDatas(passagens,dataInicio,dataFim,skipDom){
+  const N=passagens.length;
+  const dias=diasUteisEntreDatas(dataInicio,dataFim,skipDom);
+  if(!dias.length)dias.push(dataInicio); // fallback
+  return passagens.map(function(p,i){
+    const idx=N<=1?0:Math.min(Math.round(i*(dias.length-1)/(N-1)),dias.length-1);
+    return {id:Date.now()+i,passagem:p,data:dias[idx],status:'pendente',nota:''};
+  });
+}
+function previewBloco(){
+  const txt=document.getElementById('bloco-passagens').value;
+  const dataIni=document.getElementById('bloco-data').value;
+  const dataFim=document.getElementById('bloco-datafim').value;
+  const skipDom=document.getElementById('bloco-skip-dom').checked;
+  if(!txt.trim()||!dataIni||!dataFim){alert('Preencha as passagens, data de início e data de término.');return;}
+  if(dataFim<dataIni){alert('A data de término deve ser igual ou posterior à data de início.');return;}
+  const pass=expandirPassagens(txt);
+  const itens=distribuirDatas(pass,dataIni,dataFim,skipDom);
+  const prev=document.getElementById('bloco-preview');
+  const lista=document.getElementById('bloco-preview-lista');
+  const amostra=itens.slice(0,8);
+  const dIni=new Date(dataIni+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+  const dFim=new Date(dataFim+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+  lista.innerHTML='<div style="font-size:.7rem;background:#eef6ff;border-radius:6px;padding:5px 8px;margin-bottom:6px;color:var(--primary);">'+pass.length+' passagens distribuídas de '+dIni+' a '+dFim+'</div>'
+    +amostra.map(function(it){
+      const d=new Date(it.data+'T12:00:00');
+      const dStr=d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',weekday:'short'});
+      return '<div style="padding:3px 0;border-bottom:1px solid #e2e8f0;">'+dStr+' — '+it.passagem+'</div>';
+    }).join('')+(itens.length>8?'<div style="font-size:.7rem;opacity:.6;padding-top:5px;">... e mais '+(itens.length-8)+' entradas</div>':'');
+  prev.style.display='block';
+}
+function salvarBloco(){
+  const txt=document.getElementById('bloco-passagens').value;
+  const dataIni=document.getElementById('bloco-data').value;
+  const dataFim=document.getElementById('bloco-datafim').value;
+  const skipDom=document.getElementById('bloco-skip-dom').checked;
+  if(!txt.trim()||!dataIni||!dataFim){alert('Preencha as passagens, data de início e data de término.');return;}
+  if(dataFim<dataIni){alert('A data de término deve ser igual ou posterior à data de início.');return;}
+  const p=planos.find(x=>x.id===planoAtivoId);if(!p)return;
+  const pass=expandirPassagens(txt);
+  const itens=distribuirDatas(pass,dataIni,dataFim,skipDom);
+  p.passagens=p.passagens.concat(itens);
+  p.passagens.sort(function(a,b){return a.data.localeCompare(b.data);});
+  salvarPlanos();
+  toggleFormBloco();
+  document.getElementById('bloco-passagens').value='';
+  document.getElementById('bloco-preview').style.display='none';
+  renderDetalhe();
+}
+function setStatusPassagem(passId,status){
+  const p=planos.find(x=>x.id===planoAtivoId);if(!p)return;
+  const it=p.passagens.find(x=>x.id===passId);
+  if(it){it.status=status;salvarPlanos();renderDetalhe();}
+}
+function delPassagem(passId){
+  const p=planos.find(x=>x.id===planoAtivoId);if(!p)return;
+  p.passagens=p.passagens.filter(x=>x.id!==passId);
+  salvarPlanos();renderDetalhe();
+}
+function renderLeituraHoje(){
+  const hDiv=document.getElementById('leitura-hoje');
+  const todasHoje=[];
+  const pendencias=[];
+  for(const p of planos){
+    for(const it of p.passagens){
+      const concluido=(it.status==='concluido'||it.status==='cancelado');
+      if(it.data===hojeStr)todasHoje.push(Object.assign({},it,{planoNome:p.nome}));
+      else if(it.data<hojeStr&&!concluido)pendencias.push(Object.assign({},it,{planoNome:p.nome}));
+    }
+  }
+  let html='';
+  if(pendencias.length){
+    html+='<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;padding:10px 12px;margin-bottom:10px;">'
+      +'<div style="font-size:.7rem;font-weight:700;color:#c2410c;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">⚠️ '+pendencias.length+' pendência'+(pendencias.length>1?'s':'')+' em atraso</div>'
+      +pendencias.map(function(it){
+        const d=new Date(it.data+'T12:00:00');
+        const dStr=d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+        return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #fed7aa;font-size:.8rem;">'
+          +'<span style="color:#c2410c;font-weight:700;min-width:38px;">'+dStr+'</span>'
+          +'<span style="font-size:.65rem;color:#888;background:#f0f4f8;padding:1px 6px;border-radius:4px;">'+it.planoNome+'</span>'
+          +'<span style="flex:1;color:var(--primary);font-weight:600;">'+it.passagem+'</span>'
+          +'</div>';
+      }).join('')
+      +'</div>';
+  }
+  if(todasHoje.length){
+    html+=todasHoje.map(function(it){
+      return '<div class="leitura-item" style="background:#eef6ff;border-color:#93c5fd;">'
+        +'<span class="hoje-badge">HOJE</span>'
+        +'<span style="font-size:.68rem;color:#888;background:#f0f4f8;padding:2px 7px;border-radius:5px;">'+it.planoNome+'</span>'
+        +'<span class="leitura-passagem">'+it.passagem+'</span>'
+        +'</div>';
+    }).join('');
+  }
+  if(!html)html='<div class="empty-msg">Nenhuma leitura planejada para hoje e sem pendências.</div>';
+  hDiv.innerHTML=html;
+}
+function renderPlanosList(){
+  renderLeituraHoje();
+  const div=document.getElementById('planos-list');
+  if(!planos.length){
+    div.innerHTML='<div class="empty-msg">Nenhum plano criado. Clique em "+ Novo Plano" para começar.</div>';return;
+  }
+  div.innerHTML=planos.map(function(p){
+    const total=p.passagens.length;
+    const conc=p.passagens.filter(x=>x.status==='concluido').length;
+    const pct=total?Math.round(conc/total*100):0;
+    const hojeCount=p.passagens.filter(x=>x.data===hojeStr).length;
+    return '<div class="plano-card" onclick="verPlano('+p.id+')">'
+      +'<div class="plano-card-header">'
+      +'<span class="plano-card-nome">📖 '+p.nome+'</span>'
+      +(hojeCount?'<span class="hoje-badge">'+hojeCount+' hoje</span>':'')
+      +'<span style="font-size:.75rem;color:#888;">'+conc+'/'+total+' · '+pct+'%</span>'
+      +'</div>'
+      +'<div class="plano-progress"><div class="plano-progress-bar" style="width:'+pct+'%"></div></div>'
+      +'</div>';
+  }).join('');
+}
+function renderDetalhe(){
+  const p=planos.find(x=>x.id===planoAtivoId);if(!p)return;
+  document.getElementById('detalhe-nome').textContent='📖 '+p.nome;
+  const total=p.passagens.length;
+  const conc=p.passagens.filter(x=>x.status==='concluido').length;
+  const pend=p.passagens.filter(x=>x.status==='pendente').length;
+  const pct=total?Math.round(conc/total*100):0;
+  document.getElementById('detalhe-stats').innerHTML=
+    '<div class="stat-box"><div class="stat-num">'+total+'</div><div class="stat-lbl">Total</div></div>'
+    +'<div class="stat-box"><div class="stat-num" style="color:#22c55e">'+conc+'</div><div class="stat-lbl">Concluídas</div></div>'
+    +'<div class="stat-box"><div class="stat-num" style="color:#f59e0b">'+pend+'</div><div class="stat-lbl">Pendentes</div></div>'
+    +'<div class="stat-box"><div class="stat-num">'+pct+'%</div><div class="stat-lbl">Progresso</div></div>';
+  const filtro=document.getElementById('filtro-passagens').value;
+  const lista=filtro==='todos'?p.passagens:p.passagens.filter(x=>x.status===filtro);
+  const ul=document.getElementById('detalhe-list');
+  if(!lista.length){ul.innerHTML='<li class="empty-msg">Nenhuma passagem encontrada.</li>';return;}
+  ul.innerHTML='';
+  lista.forEach(function(it){
+    const d=new Date(it.data+'T12:00:00');
+    const dStr=d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',weekday:'short'});
+    const isHoje=it.data===hojeStr;
+    const li=document.createElement('li');
+    li.className='leitura-item';
+    if(isHoje)li.style.cssText='background:#eef6ff;border-color:#93c5fd;';
+    li.innerHTML='<span class="leitura-data">'+dStr+'</span>'
+      +(isHoje?'<span class="hoje-badge">HOJE</span>':'')
+      +'<span class="leitura-passagem">'+it.passagem+'</span>'
+      +'<div class="status-btns">'
+      +STATUS_L.map(function(s){return '<button class="st-btn '+s.cls+(it.status===s.id?' ativo':'')+'" onclick="setStatusPassagem('+it.id+',\''+s.id+'\')">'+s.label+'</button>';}).join('')
+      +'</div>'
+      +'<button class="add-btn danger" style="padding:2px 7px;font-size:.65rem;" onclick="delPassagem('+it.id+')">✕</button>';
+    ul.appendChild(li);
+  });
+}
+renderPlanosList();
+
+// ══ MOTIVOS DE ORAÇÃO ════════════════════════════════
+let oracoes=load('dev_oracoes',[]);
+let oEditId=null;
+let oFiltro='todos';
+const CAT_SLUG=c=>c.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z]/g,'');
+
+function toggleFormOracao(id=null){
+  const f=document.getElementById('form-oracao');
+  oEditId=id;
+  if(id!==null){
+    const o=oracoes.find(x=>x.id===id);
+    if(o){
+      document.getElementById('o-texto').value=o.texto;
+      document.getElementById('o-cat').value=o.categoria;
+      document.getElementById('o-inicio').value=o.inicio||'';
+      document.getElementById('o-fim').value=o.fim||'';
+    }
+  } else {
+    document.getElementById('o-texto').value='';
+    document.getElementById('o-inicio').value=hojeStr;
+    document.getElementById('o-fim').value='';
+  }
+  f.style.display=f.style.display==='none'?'block':'none';
+}
+function saveOracao(){
+  const texto=document.getElementById('o-texto').value.trim();
+  if(!texto)return;
+  const item={
+    id:oEditId||Date.now(),
+    texto,
+    categoria:document.getElementById('o-cat').value,
+    inicio:document.getElementById('o-inicio').value,
+    fim:document.getElementById('o-fim').value,
+  };
+  if(oEditId!==null){
+    const idx=oracoes.findIndex(x=>x.id===oEditId);
+    if(idx>=0)oracoes[idx]=item;
+  } else {
+    oracoes.unshift(item);
+  }
+  save('dev_oracoes',oracoes);oEditId=null;
+  renderOracoes();toggleFormOracao();
+}
+function delOracao(id){oracoes=oracoes.filter(x=>x.id!==id);save('dev_oracoes',oracoes);renderOracoes();}
+function setFiltroOracao(f){oFiltro=f;renderOracoes();}
+function oracaoAtivaHoje(o){
+  if(!o.inicio&&!o.fim)return true;
+  if(o.inicio&&!o.fim)return hojeStr>=o.inicio;
+  if(!o.inicio&&o.fim)return hojeStr<=o.fim;
+  return hojeStr>=o.inicio&&hojeStr<=o.fim;
+}
+function renderOracoes(){
+  // Lista do dia
+  const ativas=oracoes.filter(oracaoAtivaHoje);
+  const hDiv=document.getElementById('oracao-hoje-list');
+  if(ativas.length){
+    hDiv.innerHTML=ativas.map(o=>`
+      <div class="oracao-dia-item">
+        <span class="tag cat-tag-${CAT_SLUG(o.categoria)}">${o.categoria}</span>
+        <span style="flex:1;font-size:.82rem;color:var(--primary);">${o.texto}</span>
+      </div>`).join('');
+  } else {
+    hDiv.innerHTML='<div class="empty-msg">Nenhum motivo de oração ativo para hoje.</div>';
+  }
+  // Lista completa com filtro
+  let filtradas=oFiltro==='todos'?oracoes:
+    oFiltro==='ativos'?oracoes.filter(oracaoAtivaHoje):
+    oracoes.filter(o=>o.categoria===oFiltro);
+  const div=document.getElementById('oracao-list');
+  if(!filtradas.length){div.innerHTML='<div class="empty-msg">Nenhum motivo encontrado.</div>';return;}
+  div.innerHTML=filtradas.map(o=>{
+    const ativo=oracaoAtivaHoje(o);
+    const periodo=o.inicio||o.fim?`${o.inicio||'sem início'} → ${o.fim||'sem prazo'}`:'Sempre ativo';
+    return `<div class="oracao-item">
+      <div class="oracao-body">
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:4px">
+          <span class="tag cat-tag-${CAT_SLUG(o.categoria)}">${o.categoria}</span>
+          ${ativo?'<span class="tag" style="background:#16a34a">Ativo hoje</span>':'<span class="tag" style="background:#94a3b8">Inativo</span>'}
+        </div>
+        <div class="oracao-txt">${o.texto}</div>
+        <div class="oracao-meta">📅 ${periodo}</div>
+      </div>
+      <div class="oracao-acoes">
+        <button class="add-btn sec" style="font-size:.68rem;padding:3px 9px;" onclick="toggleFormOracao(${o.id})">✏️ Editar</button>
+        <button class="add-btn danger" style="font-size:.68rem;padding:3px 9px;" onclick="delOracao(${o.id})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+renderOracoes();
+
+// ══ LIVROS ═══════════════════════════════════════════
+let livrosMesAno={ano:hoje.getFullYear(),mes:hoje.getMonth()};
+let livros=load('dev_livros',[]);
+let livroEditId=null;
+
+function mudarMesLivros(d){
+  livrosMesAno.mes+=d;
+  if(livrosMesAno.mes>11){livrosMesAno.mes=0;livrosMesAno.ano++;}
+  if(livrosMesAno.mes<0){livrosMesAno.mes=11;livrosMesAno.ano--;}
+  renderLivros();
+}
+function toggleFormLivro(id=null){
+  const f=document.getElementById('form-livro');
+  livroEditId=id;
+  if(id!==null){
+    const l=livros.find(x=>x.id===id);
+    if(l){
+      document.getElementById('liv-titulo').value=l.titulo;
+      document.getElementById('liv-autor').value=l.autor||'';
+      document.getElementById('liv-pct').value=l.pct||0;
+      document.getElementById('liv-tipo').value=l.tipo||'Teologia';
+    }
+  } else {
+    document.getElementById('liv-titulo').value='';
+    document.getElementById('liv-autor').value='';
+    document.getElementById('liv-pct').value=0;
+  }
+  f.style.display=f.style.display==='none'?'block':'none';
+}
+function saveLivro(){
+  const titulo=document.getElementById('liv-titulo').value.trim();
+  if(!titulo)return;
+  const item={
+    id:livroEditId||Date.now(),
+    titulo,
+    autor:document.getElementById('liv-autor').value.trim(),
+    pct:parseInt(document.getElementById('liv-pct').value)||0,
+    tipo:document.getElementById('liv-tipo').value,
+    ano:livrosMesAno.ano,
+    mes:livrosMesAno.mes,
+  };
+  if(livroEditId!==null){
+    const idx=livros.findIndex(x=>x.id===livroEditId);
+    if(idx>=0)livros[idx]=item;
+  } else {
+    livros.push(item);
+  }
+  save('dev_livros',livros);livroEditId=null;
+  renderLivros();toggleFormLivro();
+}
+function delLivro(id){livros=livros.filter(x=>x.id!==id);save('dev_livros',livros);renderLivros();}
+function updatePct(id,val){
+  const l=livros.find(x=>x.id===id);
+  if(l){l.pct=parseInt(val);save('dev_livros',livros);renderLivros();}
+}
+function renderLivros(){
+  document.getElementById('livros-mes-titulo').textContent=
+    MESES[livrosMesAno.mes]+' '+livrosMesAno.ano;
+  const mes=livros.filter(l=>l.ano===livrosMesAno.ano&&l.mes===livrosMesAno.mes);
+  const div=document.getElementById('livros-list');
+  if(!mes.length){div.innerHTML='<div class="empty-msg">Nenhum livro neste mês. Adicione acima.</div>';return;}
+  div.innerHTML=mes.map(l=>`
+    <div class="livro-item">
+      <div class="livro-capa">📘</div>
+      <div class="livro-body">
+        <div class="livro-titulo">${l.titulo}</div>
+        <div class="livro-autor">${l.autor||'Autor não informado'} ${l.tipo?'· '+l.tipo:''}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:5px;">
+          <div class="livro-progress" style="flex:1"><div class="livro-progress-bar" style="width:${l.pct}%"></div></div>
+          <input type="number" min="0" max="100" value="${l.pct}" style="width:52px;padding:2px 5px;border-radius:5px;border:1px solid var(--border);font-size:.72rem;font-family:inherit;color:var(--primary);background:#f0f4f8;" onchange="updatePct(${l.id},this.value)">
+          <span class="livro-pct">%</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <button class="add-btn sec" style="font-size:.68rem;padding:3px 9px;" onclick="toggleFormLivro(${l.id})">✏️</button>
+        <button class="add-btn danger" style="font-size:.68rem;padding:3px 9px;" onclick="delLivro(${l.id})">✕</button>
+      </div>
+    </div>`).join('');
+}
+renderLivros();
+
+// ══ SANTIFICAÇÃO SEMANAL ══════════════════════════════
+let sant=load('dev_sant',{area:'',reflexao:'',versiculo:'',ref:'',semana:'',historico:[]});
+
+function getSemanaStr(){
+  const d=new Date(hoje);
+  d.setDate(d.getDate()-d.getDay());
+  return d.toISOString().slice(0,10);
+}
+const semanaAtual=getSemanaStr();
+// Se mudou de semana, arquiva a anterior
+if(sant.semana&&sant.semana!==semanaAtual&&sant.area){
+  sant.historico=sant.historico||[];
+  sant.historico.unshift({semana:sant.semana,area:sant.area,reflexao:sant.reflexao,versiculo:sant.versiculo,ref:sant.ref});
+  sant.historico=sant.historico.slice(0,12);
+  sant.area='';sant.reflexao='';sant.semana=semanaAtual;
+  save('dev_sant',sant);
+}
+if(!sant.semana)sant.semana=semanaAtual;
+
+function setSantArea(btn){
+  document.querySelectorAll('.sant-area-btn').forEach(b=>b.classList.remove('ativo'));
+  btn.classList.add('ativo');
+  sant.area=btn.dataset.area;
+  save('dev_sant',sant);
+}
+function salvarSant(){
+  sant.reflexao=document.getElementById('sant-reflexao').value;
+  sant.semana=semanaAtual;
+  save('dev_sant',sant);
+  const btn=event.target;btn.textContent='✓ Salvo!';setTimeout(()=>btn.textContent='Salvar',1500);
+}
+function salvarVersiculo(){
+  sant.versiculo=document.getElementById('sant-versiculo').value;
+  sant.ref=document.getElementById('sant-versiculo-ref').value;
+  sant.semana=semanaAtual;
+  save('dev_sant',sant);
+  // Sincroniza com o Dashboard Geral (mesma chave)
+  localStorage.setItem('palavra_txt',sant.versiculo);
+  localStorage.setItem('palavra_ref',sant.ref);
+  renderVersicPreview();
+  const btn=event.target;btn.textContent='✓ Sincronizado!';setTimeout(()=>btn.textContent='💾 Salvar e sincronizar',2000);
+}
+function renderVersicPreview(){
+  const txt=sant.versiculo,ref=sant.ref;
+  const box=document.getElementById('versic-preview');
+  if(txt){
+    document.getElementById('versic-preview-txt').textContent=txt;
+    document.getElementById('versic-preview-ref').textContent=ref;
+    box.style.display='block';
+  } else {box.style.display='none';}
+}
+function renderSant(){
+  // Marcar área ativa
+  document.querySelectorAll('.sant-area-btn').forEach(b=>{
+    b.classList.toggle('ativo',b.dataset.area===sant.area);
+  });
+  document.getElementById('sant-reflexao').value=sant.reflexao||'';
+  document.getElementById('sant-versiculo').value=sant.versiculo||'';
+  document.getElementById('sant-versiculo-ref').value=sant.ref||'';
+  renderVersicPreview();
+  // Histórico
+  const hist=document.getElementById('sant-historico');
+  if(!sant.historico||!sant.historico.length){
+    hist.innerHTML='<div class="empty-msg">Nenhum histórico ainda.</div>';return;
+  }
+  hist.innerHTML=sant.historico.map(h=>{
+    const d=new Date(h.semana+'T12:00:00');
+    const dStr=d.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+    return `<div style="background:#f8f9fb;border:1px solid var(--border);border-radius:9px;padding:10px 12px;margin-bottom:7px;">
+      <div style="font-size:.7rem;font-weight:700;opacity:.5;margin-bottom:4px;">Semana de ${dStr} · ${h.area||'Área não definida'}</div>
+      ${h.reflexao?`<div style="font-size:.8rem;color:var(--primary);margin-bottom:4px;">${h.reflexao}</div>`:''}
+      ${h.versiculo?`<div style="font-size:.78rem;font-style:italic;color:var(--area-dark);">"${h.versiculo}" <strong>${h.ref||''}</strong></div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ── INIT: pré-carregar versículo padrão se não houver nenhum salvo ──────────
+(function preCarregarVersiculo(){
+  if(!sant.versiculo){
+    const textoAgeu = 'Agora, porém, sê forte, Zorobabel! — palavra do SENHOR. Sê forte também, Josué, filho de Jeozadaque, sumo sacerdote! Sede fortes, todo o povo da terra! — palavra do SENHOR. E trabalhai, porque eu estou convosco — palavra do SENHOR dos Exércitos.';
+    const refAgeu   = 'Ageu 2:4 — NAA';
+    sant.versiculo  = textoAgeu;
+    sant.ref        = refAgeu;
+    sant.semana     = semanaAtual;
+    save('dev_sant', sant);
+    localStorage.setItem('palavra_txt', textoAgeu);
+    localStorage.setItem('palavra_ref', refAgeu);
+  }
+})();
+renderSant();
+renderVersicPreview();
+renderOracoes();
+renderLivros();
+renderPlanosList();
+renderLeituraHoje();
+</script>
+</body>
+</html>
